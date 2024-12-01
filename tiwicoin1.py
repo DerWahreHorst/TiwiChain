@@ -1,9 +1,10 @@
 import hashlib
 import json
 from time import time
-from flask import Flask
+from flask import Flask, request, jsonify
 from uuid import uuid4
 import requests
+from urllib.parse import urlparse
 
 
 
@@ -126,7 +127,7 @@ class Blockchain:
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], block['proof']):
+            if not self.valid_proof(last_block['proof'], block['proof'], block['previous_hash']):
                 return False
 
             last_block = block
@@ -150,6 +151,8 @@ class Blockchain:
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
             response = requests.get(f'http://{node}/chain')
+            print("Requesting node "+f'http://{node}/chain'+" ... ")
+            print(response)
 
             if response.status_code == 200:
                 length = response.json()['length']
@@ -166,6 +169,45 @@ class Blockchain:
             return True
 
         return False
+    
+    def register_node(self, address):
+        """
+        Add a new node to the list of nodes.
+
+        :param address: Address of the node. Eg. 'http://192.168.0.5:5000'
+        """
+        print("register_node mit: ", address)
+        parsed_url = urlparse(address)
+        if parsed_url.netloc:
+            # Handles addresses with scheme like 'http://'
+            self.nodes.add(parsed_url.netloc)
+        elif parsed_url.path:
+            # Accepts addresses without scheme like '192.168.0.5:5000'
+            self.nodes.add(parsed_url.path)
+        else:
+            raise ValueError('Invalid URL')
+        
+    def synchronize_nodes(self):
+        """
+        Synchronize the list of nodes with neighboring nodes.
+        """
+        new_nodes = set()
+
+        for node in self.nodes:
+            try:
+                response = requests.get(f'http://{node}/nodes')
+                if response.status_code == 200:
+                    data = response.json()
+                    neighbor_nodes = data.get('nodes', [])
+                    new_nodes.update(neighbor_nodes)
+            except requests.exceptions.RequestException:
+                # Skip nodes that are not reachable
+                pass
+
+        # Update the local nodes list with new nodes discovered
+        self.nodes.update(new_nodes)
+
+
 
 
 
@@ -228,7 +270,13 @@ def full_chain():
         'length': len(blockchain.chain),
     }
     return jsonify(response), 200
-    
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    response = {
+        'nodes': list(blockchain.nodes),
+    }
+    return jsonify(response), 200    
 
 @app.route('/nodes/register', methods=['POST'])
 def register_nodes():
@@ -246,6 +294,16 @@ def register_nodes():
         'total_nodes': list(blockchain.nodes),
     }
     return jsonify(response), 201
+
+@app.route('/nodes/synchronize', methods=['GET'])
+def synchronize():
+    blockchain.synchronize_nodes()
+    response = {
+        'message': 'Node list synchronized',
+        'total_nodes': list(blockchain.nodes),
+    }
+    return jsonify(response), 200
+
 
 @app.route('/nodes/resolve', methods=['GET'])
 def consensus():
@@ -269,5 +327,6 @@ def consensus():
 
 
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8317)
