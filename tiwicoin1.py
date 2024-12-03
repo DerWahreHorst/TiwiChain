@@ -272,32 +272,69 @@ blockchain = Blockchain()
 
 blockchain_lock = threading.Lock()
 
-def start_consensus_daemon():
-    def consensus_worker():
-        while True:
-            with blockchain_lock:
-                try:
-                    replaced = blockchain.resolve_conflicts()
-                    if replaced:
-                        print("Our chain was replaced by a longer chain.")
-                    else:
-                        print("Our chain is authoritative.")
-                except Exception as e:
-                    print(f"Error running consensus algorithm: {e}")
 
-                try:
-                    blockchain.register_with_network()
-                except Exception as e:
-                    print(f"Error registering with the network: {e}")
+def consensus_worker():
+    while True:
+        with blockchain_lock:
+            try:
+                replaced = blockchain.resolve_conflicts()
+                if replaced:
+                    print("Our chain was replaced by a longer chain.")
+                else:
+                    print("Our chain is authoritative.")
+            except Exception as e:
+                print(f"Error running consensus algorithm: {e}")
 
-                try:
-                    blockchain.synchronize_nodes()
-                except Exception as e:
-                    print(f"Error synchronizing nodes: {e}")
-                # Wait for a specified interval before running again
-            time.sleep(10)  # Run every 10 seconds; adjust as needed
+            try:
+                blockchain.register_with_network()
+            except Exception as e:
+                print(f"Error registering with the network: {e}")
 
-    # Start the worker thread
+            try:
+                blockchain.synchronize_nodes()
+            except Exception as e:
+                print(f"Error synchronizing nodes: {e}")
+            # Wait for a specified interval before running again
+        time.sleep(10)  # Run every 10 seconds; adjust as needed
+
+def node_registration_worker():
+    """
+    Registers the node with the network once at startup.
+    """
+    with blockchain_lock:
+        try:
+            print("Registering with network...")
+            blockchain.register_with_network()
+            print("Node registration complete.")
+        except Exception as e:
+            print(f"Error registering with network: {e}")
+
+def node_sync_worker():
+    """
+    Periodically synchronizes the node list.
+    """
+    while True:
+        time.sleep(30)  # Adjust the interval as needed
+        with blockchain_lock:
+            try:
+                print("Synchronizing node list...")
+                blockchain.synchronize_nodes()
+                print("Node synchronization complete.")
+            except Exception as e:
+                print(f"Error synchronizing nodes: {e}")
+
+def start_background_tasks():
+    # Start node registration thread
+    node_registration_thread = threading.Thread(target=node_registration_worker)
+    node_registration_thread.daemon = True
+    node_registration_thread.start()
+
+    # Start node synchronization thread
+    node_sync_thread = threading.Thread(target=node_sync_worker)
+    node_sync_thread.daemon = True
+    node_sync_thread.start()
+
+    # Start chain synchronization thread
     consensus_thread = threading.Thread(target=consensus_worker)
     consensus_thread.daemon = True  # Daemonize thread to exit when main thread exits
     consensus_thread.start()
@@ -433,6 +470,6 @@ def consensus():
 
 if __name__ == '__main__':
     # Start the consensus daemon
-    start_consensus_daemon()
+    start_background_tasks()
     # Run the Flask app
     app.run(host='0.0.0.0', port=8317)

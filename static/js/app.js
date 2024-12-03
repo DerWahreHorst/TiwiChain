@@ -1,6 +1,34 @@
 document.addEventListener('DOMContentLoaded', function() {
     const chainDiv = document.getElementById('chain');
     const messagesDiv = document.getElementById('messages');
+    const nodesDiv = document.getElementById('nodes'); // Add this line
+
+    // Function to fetch and display the node list
+    function fetchNodes() {
+        fetch('/nodes')
+            .then(response => response.json())
+            .then(data => {
+                nodesDiv.innerHTML = '';
+
+                if (data.nodes && data.nodes.length > 0) {
+                    const nodeList = document.createElement('ul');
+
+                    data.nodes.forEach(node => {
+                        const nodeItem = document.createElement('li');
+                        nodeItem.textContent = node;
+                        nodeList.appendChild(nodeItem);
+                    });
+
+                    nodesDiv.appendChild(nodeList);
+                } else {
+                    nodesDiv.textContent = 'No nodes registered.';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching nodes:', error);
+                nodesDiv.textContent = 'Error fetching node list.';
+            });
+    }
 
     // Function to fetch and display the blockchain
     function fetchChain() {
@@ -39,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch the blockchain on page load
     fetchChain();
+    fetchNodes();
 
     // Handle transaction form submission
     const transactionForm = document.getElementById('transaction-form');
