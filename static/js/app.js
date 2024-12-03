@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchChain();
     fetchNodes();
 
+    // Set up automatic refresh for the blockchain section
+    const refreshInterval = 5000; // Refresh every 30 seconds (adjust as needed)
+    setInterval(fetchChain, refreshInterval);
+    setInterval(fetchNodes, refreshInterval);
+
     // Handle transaction form submission
     const transactionForm = document.getElementById('transaction-form');
     transactionForm.addEventListener('submit', function(event) {
