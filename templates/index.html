@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Blockchain</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h1>Blockchain Explorer</h1>
+
+    <!-- Transaction Form -->
+    <h2>Create a New Transaction</h2>
+    <form id="transaction-form">
+        <label for="sender">Sender Address:</label><br>
+        <input type="text" id="sender" name="sender" required><br><br>
+        <label for="recipient">Recipient Address:</label><br>
+        <input type="text" id="recipient" name="recipient" required><br><br>
+        <label for="amount">Amount:</label><br>
+        <input type="number" id="amount" name="amount" required><br><br>
+        <button type="submit">Send Transaction</button>
+    </form>
+
+    <!-- Mine Block Button -->
+    <h2>Mining</h2>
+    <button id="mine-block">Mine a New Block</button>
+
+    <!-- Messages -->
+    <div id="messages"></div>
+
+    <!-- Blockchain Display -->
+    <h2>Blockchain</h2>
+    <div id="chain">
+        <!-- Blockchain data will be injected here -->
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

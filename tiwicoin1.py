@@ -1,19 +1,33 @@
 import hashlib
 import json
-from time import time
-from flask import Flask, request, jsonify
+import time
+from flask import Flask, request, jsonify, render_template
 from uuid import uuid4
 import requests
 from urllib.parse import urlparse
+import threading
 
 
-
+def get_public_ip():
+    try:
+        # Use an external service to get the public IP
+        response = requests.get('https://api.ipify.org?format=json')
+        if response.status_code == 200:
+            ip_info = response.json()
+            return ip_info['ip']
+        else:
+            print("Failed to get public IP address.")
+            return None
+    except Exception as e:
+        print(f"Error obtaining public IP: {e}")
+        return None
+    
 
 class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set()
+        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
 
         # Create the genesis block
         self.new_block(previous_hash=1, proof=100)
@@ -28,7 +42,7 @@ class Blockchain:
         """
         block = {
             'index': len(self.chain) + 1,
-            'timestamp': time(),
+            'timestamp': time.time(),
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
@@ -175,18 +189,15 @@ class Blockchain:
         Add a new node to the list of nodes.
 
         :param address: Address of the node. Eg. 'http://192.168.0.5:5000'
+        :return: True if the node was added, False if it was already present
         """
-        print("register_node mit: ", address)
         parsed_url = urlparse(address)
-        if parsed_url.netloc:
-            # Handles addresses with scheme like 'http://'
-            self.nodes.add(parsed_url.netloc)
-        elif parsed_url.path:
-            # Accepts addresses without scheme like '192.168.0.5:5000'
-            self.nodes.add(parsed_url.path)
-        else:
-            raise ValueError('Invalid URL')
-        
+        netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path
+        if netloc not in self.nodes:
+            self.nodes.add(netloc)
+            return True
+        return False
+            
     def synchronize_nodes(self):
         """
         Synchronize the list of nodes with neighboring nodes.
@@ -206,6 +217,44 @@ class Blockchain:
 
         # Update the local nodes list with new nodes discovered
         self.nodes.update(new_nodes)
+        return True
+
+    def register_with_network(self):
+        #node_address = get_public_ip()+":8317"
+        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+
+        for node in self.nodes:
+            # Register with the seed node
+            payload = {
+                'nodes': [node_address]
+            }
+            try:
+                response = requests.post(f'http://{node}/nodes/register', json=payload)
+                if response.status_code == 201:
+                    print("Successfully registered with the seed node.")
+                    # Retrieve the list of nodes from the seed node
+                    nodes_response = requests.get(f'http://{node}/nodes')
+                    if nodes_response.status_code == 200:
+                        nodes_data = nodes_response.json()
+                        other_nodes = nodes_data.get('nodes', [])
+                        # Register with other nodes
+                        for node in other_nodes:
+                            if node != node_address:
+                                try:
+                                    url = f'http://{node}/nodes/register'
+                                    requests.post(url, json=payload)
+                                    print(f"Registered with node {node}")
+                                except requests.exceptions.RequestException:
+                                    print(f"Could not register with node {node}")
+                    else:
+                        print("Could not retrieve node list from seed node.")
+                else:
+                    print(f"Failed to register with the seed node: {response.text}")
+            except Exception as e:
+                print(f"Error registering with seed node: {e}")
+
+        #register own address
+        self.register_node(node_address)
 
 
 
@@ -221,32 +270,70 @@ node_identifier = str(uuid4()).replace('-', '')
 # Instantiate the Blockchain
 blockchain = Blockchain()
 
+blockchain_lock = threading.Lock()
+
+def start_consensus_daemon():
+    def consensus_worker():
+        while True:
+            with blockchain_lock:
+                try:
+                    replaced = blockchain.resolve_conflicts()
+                    if replaced:
+                        print("Our chain was replaced by a longer chain.")
+                    else:
+                        print("Our chain is authoritative.")
+                except Exception as e:
+                    print(f"Error running consensus algorithm: {e}")
+
+                try:
+                    blockchain.register_with_network()
+                except Exception as e:
+                    print(f"Error registering with the network: {e}")
+
+                try:
+                    blockchain.synchronize_nodes()
+                except Exception as e:
+                    print(f"Error synchronizing nodes: {e}")
+                # Wait for a specified interval before running again
+            time.sleep(10)  # Run every 10 seconds; adjust as needed
+
+    # Start the worker thread
+    consensus_thread = threading.Thread(target=consensus_worker)
+    consensus_thread.daemon = True  # Daemonize thread to exit when main thread exits
+    consensus_thread.start()
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/mine', methods=['GET'])
 def mine():
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    proof = blockchain.proof_of_work(last_block)
+    with blockchain_lock:
+        # We run the proof of work algorithm to get the next proof...
+        last_block = blockchain.last_block
+        proof = blockchain.proof_of_work(last_block)
 
-    # We must receive a reward for finding the proof.
-    # The sender is "0" to signify that this node has mined a new coin.
-    blockchain.new_transaction(
-        sender="0",
-        recipient=node_identifier,
-        amount=1,
-    )
+        # We must receive a reward for finding the proof.
+        # The sender is "0" to signify that this node has mined a new coin.
+        blockchain.new_transaction(
+            sender="0",
+            recipient=node_identifier,
+            amount=1,
+        )
 
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
+        # Forge the new Block by adding it to the chain
+        previous_hash = blockchain.hash(last_block)
+        block = blockchain.new_block(proof, previous_hash)
 
-    response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
-    }
-    return jsonify(response), 200
+        response = {
+            'message': "New Block Forged",
+            'index': block['index'],
+            'transactions': block['transactions'],
+            'proof': block['proof'],
+            'previous_hash': block['previous_hash'],
+        }
+        return jsonify(response), 200
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
@@ -286,8 +373,14 @@ def register_nodes():
     if nodes is None:
         return "Error: Please supply a valid list of nodes", 400
 
+    new_nodes = []
     for node in nodes:
-        blockchain.register_node(node)
+        if blockchain.register_node(node):
+            new_nodes.append(node)
+
+    # Broadcast new nodes to other nodes
+    if new_nodes:
+        blockchain.broadcast_new_nodes(new_nodes)
 
     response = {
         'message': 'New nodes have been added',
@@ -300,6 +393,16 @@ def synchronize():
     blockchain.synchronize_nodes()
     response = {
         'message': 'Node list synchronized',
+        'total_nodes': list(blockchain.nodes),
+    }
+    return jsonify(response), 200
+
+@app.route('/nodes/register_with_network', methods=['GET'])
+def register_with_network():
+
+    blockchain.register_with_network()
+    response = {
+        'message': 'We are registered',
         'total_nodes': list(blockchain.nodes),
     }
     return jsonify(response), 200
@@ -329,4 +432,7 @@ def consensus():
 
 
 if __name__ == '__main__':
+    # Start the consensus daemon
+    start_consensus_daemon()
+    # Run the Flask app
     app.run(host='0.0.0.0', port=8317)

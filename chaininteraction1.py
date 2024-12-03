@@ -1,19 +1,7 @@
 import requests
 import json
 
-def get_public_ip():
-    try:
-        # Use an external service to get the public IP
-        response = requests.get('https://api.ipify.org?format=json')
-        if response.status_code == 200:
-            ip_info = response.json()
-            return ip_info['ip']
-        else:
-            print("Failed to get public IP address.")
-            return None
-    except Exception as e:
-        print(f"Error obtaining public IP: {e}")
-        return None
+
 
 # Create a new transaction
 new_transaction = {
@@ -26,24 +14,30 @@ new_transaction = {
 #     'nodes': ['http://s3y0yvftgi2cph5e.myfritz.net:8317', get_public_ip()+":8317"],
 # }
 new_nodes = {
-    'nodes': ['http://s3y0yvftgi2cph5e.myfritz.net:8317', 'https://b557-2a01-599-619-1f20-4815-e62d-30af-64ad.ngrok-free.app'],
+    'nodes': ['http://s3y0yvftgi2cph5e.myfritz.net:8317', 'https://bcbf-80-187-114-41.ngrok-free.app'],
 }
 
 
 # Send the transaction to the server
-response = requests.post('http://localhost:8317/transactions/new', json=new_transaction)
-response = requests.get('http://localhost:8317/mine')
+#response = requests.get('http://localhost:8317/nodes/register_with_network')
+#print(response.json())
+#response = requests.post('http://localhost:8317/transactions/new', json=new_transaction)
+#response = requests.get('http://localhost:8317/mine')
 #response = requests.get('http://localhost:8317/chain')
-
-
-response = requests.post('http://localhost:8317/nodes/register', json=new_nodes)
-data = response.json()
-nodes = data['total_nodes']
-print(get_public_ip())
-print(nodes)
-
+#print(response.json())
+#response = requests.get('http://localhost:8317/nodes')
+#response = requests.get('http://s3y0yvftgi2cph5e.myfritz.net:8317/nodes')
+#response = requests.get('https://bcbf-80-187-114-41.ngrok-free.app/nodes')
 response = requests.get('http://localhost:8317/nodes/resolve')
+#response = requests.post('http://localhost:8317/nodes/register', json=new_nodes)
+#response = requests.get('http://localhost:8317/nodes/synchronize')
 print(response.json())
+
+
+# data = response.json()
+# nodes = data['total_nodes']
+# print(get_public_ip())
+# print(nodes)
 
 
 # The 'chain' key contains a JSON string, so parse it again
