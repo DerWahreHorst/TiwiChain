@@ -105,35 +105,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle transaction form submission
     const transactionForm = document.getElementById('transaction-form');
+    // Handle transaction form submission
     transactionForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
-        const sender = document.getElementById('sender').value.trim();
         const recipient = document.getElementById('recipient').value.trim();
         const amountValue = document.getElementById('amount').value;
         const amount = parseFloat(amountValue);
 
-        if (!sender || !recipient || isNaN(amount) || amount <= 0) {
-            messagesDiv.textContent = 'Please enter valid transaction details.';
+        const privateKeyHex = localStorage.getItem('privateKey');
+        const publicKeyHex = localStorage.getItem('publicKey');
+
+        if (!privateKeyHex || !publicKeyHex) {
+            showMessage('Please generate your key pair first.');
             return;
         }
 
-        const transactionData = {
-            sender: sender,
-            recipient: recipient,
+        const privateKey = ec.keyFromPrivate(privateKeyHex, 'hex');
+        const senderPublicKey = publicKeyHex;
+
+        // Create the transaction data to sign
+        const txData = {
+            sender_public_key: senderPublicKey,
+            recipient_public_key: recipient,
             amount: amount
         };
 
+        const txDataString = JSON.stringify(txData);
+
+        // Sign the transaction data
+        const hash = sha256(txDataString);
+        const signature = privateKey.sign(hash).toDER('hex');
+
+        // Include the signature in the transaction
+        txData.signature = signature;
+
+        // Send the transaction to the server
         fetch('/transactions/new', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(transactionData)
+            body: JSON.stringify(txData)
         })
         .then(response => response.json())
         .then(data => {
-            messagesDiv.textContent = data.message;
+            showMessage(data.message);
             transactionForm.reset();
         })
         .catch(error => {
@@ -142,18 +159,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Helper function to compute SHA-256 hash
+    function sha256(message) {
+        return sha256Lib.sha256(message);
+    }
+
+
     // Handle mine block button click
     const mineButton = document.getElementById('mine-block');
     mineButton.addEventListener('click', function() {
-        fetch('/mine')
-            .then(response => response.json())
-            .then(data => {
-                messagesDiv.textContent = data.message;
-                fetchChain(); // Refresh the blockchain display
-            })
-            .catch(error => {
-                console.error('Error mining block:', error);
-                messagesDiv.textContent = 'Error mining block.';
-            });
-    });
+        const publicKeyHex = localStorage.getItem('publicKey');
+    
+        if (!publicKeyHex) {
+            showMessage('Please generate your key pair first.');
+            return;
+        }
+    
+        fetch('/mine', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ miner_public_key: publicKeyHex })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message);
+            fetchChain(); // Refresh the blockchain display
+        })
+        .catch(error => {
+            console.error('Error mining block:', error);
+            messagesDiv.textContent = 'Error mining block.';
+        });
+    });    
 });

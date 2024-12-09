@@ -6,6 +6,7 @@ from uuid import uuid4
 import requests
 from urllib.parse import urlparse
 import threading
+from ecdsa import VerifyingKey, SECP256k1, BadSignatureError
 
 
 def get_public_ip():
@@ -54,22 +55,24 @@ class Blockchain:
         self.chain.append(block)
         return block
 
-    def new_transaction(self, sender, recipient, amount):
-        """
-        Creates a new transaction to go into the next mined Block
-
-        :param sender: Address of the Sender
-        :param recipient: Address of the Recipient
-        :param amount: Amount
-        :return: The index of the Block that will hold this transaction
-        """
+    def new_transaction(self, sender_public_key, recipient_public_key, amount, signature):
         self.current_transactions.append({
-            'sender': sender,
-            'recipient': recipient,
+            'sender_public_key': sender_public_key,
+            'recipient_public_key': recipient_public_key,
             'amount': amount,
+            'signature': signature
         })
-
         return self.last_block['index'] + 1
+    
+    def get_balance(self, public_key):
+        balance = 0
+        for block in self.chain:
+            for tx in block['transactions']:
+                if tx['sender_public_key'] == public_key:
+                    balance -= tx['amount']
+                if tx['recipient_public_key'] == public_key:
+                    balance += tx['amount']
+        return balance
 
     @staticmethod
     def hash(block):
@@ -344,45 +347,73 @@ def start_background_tasks():
 def index():
     return render_template('index.html')
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
+    values = request.get_json()
+
+    required = ['miner_public_key']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+
+    miner_public_key = values['miner_public_key']
+
     with blockchain_lock:
-        # We run the proof of work algorithm to get the next proof...
+        # Run proof of work algorithm
         last_block = blockchain.last_block
         proof = blockchain.proof_of_work(last_block)
 
-        # We must receive a reward for finding the proof.
-        # The sender is "0" to signify that this node has mined a new coin.
+        # Create a reward transaction to the miner
         blockchain.new_transaction(
-            sender="0",
-            recipient=node_identifier,
+            sender_public_key='0',  # '0' signifies a new coin
+            recipient_public_key=miner_public_key,
             amount=1,
+            signature=''  # No signature needed for mining reward
         )
 
-        # Forge the new Block by adding it to the chain
+        # Forge the new Block
         previous_hash = blockchain.hash(last_block)
         block = blockchain.new_block(proof, previous_hash)
 
-        response = {
-            'message': "New Block Forged",
-            'index': block['index'],
-            'transactions': block['transactions'],
-            'proof': block['proof'],
-            'previous_hash': block['previous_hash'],
-        }
-        return jsonify(response), 200
+    response = {
+        'message': "New Block Forged",
+        'block': block,
+    }
+    return jsonify(response), 200
+
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
 
-    # Check that the required fields are in the POST'ed data
-    required = ['sender', 'recipient', 'amount']
+    required = ['sender_public_key', 'recipient_public_key', 'amount', 'signature']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
+    sender_public_key = values['sender_public_key']
+    recipient_public_key = values['recipient_public_key']
+    amount = values['amount']
+    signature = values['signature']
+
+    # Reconstruct transaction data for verification
+    tx_data = {
+        'sender_public_key': sender_public_key,
+        'recipient_public_key': recipient_public_key,
+        'amount': amount
+    }
+    tx_data_string = json.dumps(tx_data, sort_keys=True)
+
+    # Verify the signature
+    try:
+        vk = VerifyingKey.from_string(bytes.fromhex(sender_public_key), curve=SECP256k1)
+        is_valid = vk.verify(bytes.fromhex(signature), tx_data_string.encode('utf-8'), hashfunc=hashlib.sha256)
+    except (BadSignatureError, ValueError, Exception) as e:
+        is_valid = False
+
+    if not is_valid:
+        return 'Invalid signature', 400
+
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index = blockchain.new_transaction(sender_public_key, recipient_public_key, amount, signature)
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
