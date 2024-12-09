@@ -167,18 +167,25 @@ class Blockchain:
 
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
-            response = requests.get(f'http://{node}/chain')
-            print("Requesting node "+f'http://{node}/chain'+" ... ")
-            print(response)
+            try:
+                response = requests.get(f'http://{node}/chain', timeout=5)
+                print(f"Requesting node http://{node}/chain ...")
+                print(response)
 
-            if response.status_code == 200:
-                length = response.json()['length']
-                chain = response.json()['chain']
+                if response.status_code == 200:
+                    length = response.json()['length']
+                    chain = response.json()['chain']
 
-                # Check if the length is longer and the chain is valid
-                if length > max_length and self.valid_chain(chain):
-                    max_length = length
-                    new_chain = chain
+                    # Check if the length is longer and the chain is valid
+                    if length > max_length and self.valid_chain(chain):
+                        max_length = length
+                        new_chain = chain
+            except requests.exceptions.RequestException as e:
+                # This node can't be reached
+                print(f"Could not reach node {node}: {e}")
+                # Decide if you want to remove the node or just skip it
+                # e.g., self.nodes.remove(node)
+                continue
 
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
