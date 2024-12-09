@@ -3,6 +3,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesDiv = document.getElementById('messages');
     const nodesDiv = document.getElementById('nodes'); // Add this line
 
+    const EC = elliptic.ec;
+    const ec = new EC('secp256k1');
+
+    const generateKeysButton = document.getElementById('generate-keys');
+    const publicKeyTextArea = document.getElementById('public-key');
+    const privateKeyTextArea = document.getElementById('private-key');
+
+    generateKeysButton.addEventListener('click', function() {
+        const keyPair = ec.genKeyPair();
+
+        const publicKey = keyPair.getPublic('hex');
+        const privateKey = keyPair.getPrivate('hex');
+
+        publicKeyTextArea.value = publicKey;
+        privateKeyTextArea.value = privateKey;
+
+        // Store keys in localStorage (use with caution)
+        localStorage.setItem('publicKey', publicKey);
+        localStorage.setItem('privateKey', privateKey);
+    });
+
+    // Load keys from localStorage if they exist
+    if (localStorage.getItem('publicKey') && localStorage.getItem('privateKey')) {
+        publicKeyTextArea.value = localStorage.getItem('publicKey');
+        privateKeyTextArea.value = localStorage.getItem('privateKey');
+    }
+
     // Function to fetch and display the node list
     function fetchNodes() {
         fetch('/nodes')
@@ -63,6 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 messagesDiv.textContent = 'Error fetching blockchain data.';
             });
     }
+
+
     
 
     // Fetch the blockchain on page load

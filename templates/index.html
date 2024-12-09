@@ -14,6 +14,18 @@
         <!-- Node list will be injected here -->
     </div>
 
+    <h2>Wallet</h2>
+    <button id="generate-keys">Generate Key Pair</button>
+    <p>Your Public Address:</p>
+    <textarea id="public-key" readonly></textarea>
+    <p>Your Private Key (Keep this secret!):</p>
+    <textarea id="private-key" readonly></textarea>
+    <!-- Include elliptic library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+    <!-- Include js-sha256 library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+    
+
     <!-- Transaction Form -->
     <h2>Create a New Transaction</h2>
     <form id="transaction-form">
