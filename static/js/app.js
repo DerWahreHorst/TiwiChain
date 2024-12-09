@@ -1,4 +1,71 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const balancesDiv = document.getElementById('balances');
+
+    function fetchBalances() {
+        fetch('/balances')
+            .then(response => response.json())
+            .then(data => {
+                // Clear previous content
+                balancesDiv.innerHTML = '';
+
+                if (data.length > 0) {
+                    const table = document.createElement('table');
+                    table.style.borderCollapse = 'collapse';
+
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+
+                    const publicKeyHeader = document.createElement('th');
+                    publicKeyHeader.textContent = 'Public Key';
+                    publicKeyHeader.style.border = '1px solid #ccc';
+                    publicKeyHeader.style.padding = '5px';
+
+                    const balanceHeader = document.createElement('th');
+                    balanceHeader.textContent = 'Balance';
+                    balanceHeader.style.border = '1px solid #ccc';
+                    balanceHeader.style.padding = '5px';
+
+                    headerRow.appendChild(publicKeyHeader);
+                    headerRow.appendChild(balanceHeader);
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+
+                        const pubKeyCell = document.createElement('td');
+                        pubKeyCell.textContent = item.public_key;
+                        pubKeyCell.style.border = '1px solid #ccc';
+                        pubKeyCell.style.padding = '5px';
+
+                        const balanceCell = document.createElement('td');
+                        balanceCell.textContent = item.balance;
+                        balanceCell.style.border = '1px solid #ccc';
+                        balanceCell.style.padding = '5px';
+
+                        row.appendChild(pubKeyCell);
+                        row.appendChild(balanceCell);
+                        tbody.appendChild(row);
+                    });
+
+                    table.appendChild(tbody);
+                    balancesDiv.appendChild(table);
+                } else {
+                    balancesDiv.textContent = 'No addresses found.';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching balances:', error);
+                balancesDiv.textContent = 'Error fetching balances.';
+            });
+    }
+    
+
+
     const chainDiv = document.getElementById('chain');
     const messagesDiv = document.getElementById('messages');
     const nodesDiv = document.getElementById('nodes'); // Add this line
@@ -97,11 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch the blockchain on page load
     fetchChain();
     fetchNodes();
+    fetchBalances();
 
     // Set up automatic refresh for the blockchain section
     const refreshInterval = 5000; // Refresh every 30 seconds (adjust as needed)
     setInterval(fetchChain, refreshInterval);
     setInterval(fetchNodes, refreshInterval);
+    setInterval(fetchBalances, refreshInterval);
 
     // Handle transaction form submission
     const transactionForm = document.getElementById('transaction-form');

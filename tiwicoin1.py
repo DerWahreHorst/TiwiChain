@@ -73,6 +73,18 @@ class Blockchain:
                 if tx['recipient_public_key'] == public_key:
                     balance += tx['amount']
         return balance
+    
+    def get_all_addresses(self):
+        """
+        Retrieve all unique public keys (addresses) encountered in the chain.
+        """
+        addresses = set()
+        for block in self.chain:
+            for tx in block['transactions']:
+                if tx['sender_public_key'] != '0':  # '0' often represents a coinbase tx
+                    addresses.add(tx['sender_public_key'])
+                addresses.add(tx['recipient_public_key'])
+        return list(addresses)
 
     @staticmethod
     def hash(block):
@@ -233,38 +245,39 @@ class Blockchain:
         #node_address = get_public_ip()+":8317"
         node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
-        for node in self.nodes:
-            # Register with the seed node
-            payload = {
-                'nodes': [node_address]
-            }
-            try:
-                response = requests.post(f'http://{node}/nodes/register', json=payload)
-                if response.status_code == 201:
-                    print("Successfully registered with the seed node.")
-                    # Retrieve the list of nodes from the seed node
-                    nodes_response = requests.get(f'http://{node}/nodes')
-                    if nodes_response.status_code == 200:
-                        nodes_data = nodes_response.json()
-                        other_nodes = nodes_data.get('nodes', [])
-                        # Register with other nodes
-                        for node in other_nodes:
-                            if node != node_address:
-                                try:
-                                    url = f'http://{node}/nodes/register'
-                                    requests.post(url, json=payload)
-                                    print(f"Registered with node {node}")
-                                except requests.exceptions.RequestException:
-                                    print(f"Could not register with node {node}")
+        if len(node_address)>7:
+            for node in self.nodes:
+                # Register with the seed node
+                payload = {
+                    'nodes': [node_address]
+                }
+                try:
+                    response = requests.post(f'http://{node}/nodes/register', json=payload)
+                    if response.status_code == 201:
+                        print("Successfully registered with the seed node.")
+                        # Retrieve the list of nodes from the seed node
+                        nodes_response = requests.get(f'http://{node}/nodes')
+                        if nodes_response.status_code == 200:
+                            nodes_data = nodes_response.json()
+                            other_nodes = nodes_data.get('nodes', [])
+                            # Register with other nodes
+                            for node in other_nodes:
+                                if node != node_address:
+                                    try:
+                                        url = f'http://{node}/nodes/register'
+                                        requests.post(url, json=payload)
+                                        print(f"Registered with node {node}")
+                                    except requests.exceptions.RequestException:
+                                        print(f"Could not register with node {node}")
+                        else:
+                            print("Could not retrieve node list from seed node.")
                     else:
-                        print("Could not retrieve node list from seed node.")
-                else:
-                    print(f"Failed to register with the seed node: {response.text}")
-            except Exception as e:
-                print(f"Error registering with seed node: {e}")
+                        print(f"Failed to register with the seed node: {response.text}")
+                except Exception as e:
+                    print(f"Error registering with seed node: {e}")
 
-        #register own address
-        self.register_node(node_address)
+            #register own address
+            self.register_node(node_address)
 
 
 
@@ -488,6 +501,18 @@ def consensus():
         }
 
     return jsonify(response), 200
+
+@app.route('/balances', methods=['GET'])
+def get_balances():
+    addresses = blockchain.get_all_addresses()
+    result = []
+    for addr in addresses:
+        bal = blockchain.get_balance(addr)
+        result.append({
+            'public_key': addr,
+            'balance': bal
+        })
+    return jsonify(result), 200
 
 
 
