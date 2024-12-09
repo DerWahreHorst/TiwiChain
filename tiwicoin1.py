@@ -223,8 +223,8 @@ class Blockchain:
         return True
 
     def register_with_network(self):
-        #node_address = get_public_ip()+":8317"
-        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        node_address = get_public_ip()+":8317"
+        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         for node in self.nodes:
             # Register with the seed node

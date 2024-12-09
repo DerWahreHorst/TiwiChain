@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p><strong>Transactions:</strong></p>
                         <ul>
                             ${block.transactions.map(tx => `
-                                <li>${tx.sender} ➡️ ${tx.recipient}: ${tx.amount}</li>
+                                <li>${tx.sender_public_key} ➡️ ${tx.recipient_public_key}: ${tx.amount}</li>
                             `).join('')}
                         </ul>
                     `;
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const publicKeyHex = localStorage.getItem('publicKey');
 
         if (!privateKeyHex || !publicKeyHex) {
-            showMessage('Please generate your key pair first.');
+            messagesDiv.textContent = 'Please generate your key pair first.';
             return;
         }
 
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            showMessage(data.message);
+            messagesDiv.textContent = data.message;
             transactionForm.reset();
         })
         .catch(error => {
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const publicKeyHex = localStorage.getItem('publicKey');
     
         if (!publicKeyHex) {
-            showMessage('Please generate your key pair first.');
+            messagesDiv.textContent = 'Please generate your key pair first.';
             return;
         }
     
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            showMessage(data.message);
+            messagesDiv.textContent = data.message;
             fetchChain(); // Refresh the blockchain display
         })
         .catch(error => {
