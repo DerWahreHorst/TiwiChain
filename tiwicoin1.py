@@ -230,8 +230,8 @@ class Blockchain:
         return True
 
     def register_with_network(self):
-        node_address = get_public_ip()+":8317"
-        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        #node_address = get_public_ip()+":8317"
+        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         for node in self.nodes:
             # Register with the seed node
@@ -294,17 +294,6 @@ def consensus_worker():
                     print("Our chain is authoritative.")
             except Exception as e:
                 print(f"Error running consensus algorithm: {e}")
-
-            try:
-                blockchain.register_with_network()
-            except Exception as e:
-                print(f"Error registering with the network: {e}")
-
-            try:
-                blockchain.synchronize_nodes()
-            except Exception as e:
-                print(f"Error synchronizing nodes: {e}")
-            # Wait for a specified interval before running again
         time.sleep(10)  # Run every 10 seconds; adjust as needed
 
 def node_registration_worker():
@@ -454,8 +443,8 @@ def register_nodes():
             new_nodes.append(node)
 
     # Broadcast new nodes to other nodes
-    if new_nodes:
-        blockchain.broadcast_new_nodes(new_nodes)
+    #if new_nodes:
+    #    blockchain.broadcast_new_nodes(new_nodes)
 
     response = {
         'message': 'New nodes have been added',
