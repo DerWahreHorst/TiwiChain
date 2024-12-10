@@ -143,7 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p><strong>Transactions:</strong></p>
                         <ul>
                             ${block.transactions.map(tx => `
-                                <li>${tx.sender_public_key} ➡️ ${tx.recipient_public_key}: ${tx.amount}</li>
+                                <li><strong>From:</strong> ${tx.sender_public_key}<br>
+                                <strong>To:</strong> ${tx.recipient_public_key}<br>
+                                <strong>Amount:</strong> ${tx.amount}</li>
                             `).join('')}
                         </ul>
                     `;
