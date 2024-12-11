@@ -28,7 +28,11 @@ class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
+        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', '1.2.3.4:8317'])
+        self.node_health = {}
+
+        for n in self.nodes:
+            self.node_health[n] = {"failures": 0, "quarantined": False}
 
         # Create the genesis block
         self.new_block(previous_hash=1, proof=100)
@@ -179,8 +183,12 @@ class Blockchain:
 
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
+            # Skip if quarantined
+            if self.node_health[node]["quarantined"]:
+                continue
+
             try:
-                response = requests.get(f'http://{node}/chain', timeout=5)
+                response = requests.get(f'http://{node}/chain', timeout=15)
                 print(f"Requesting node http://{node}/chain ...")
                 print(response)
 
@@ -192,9 +200,13 @@ class Blockchain:
                     if length > max_length and self.valid_chain(chain):
                         max_length = length
                         new_chain = chain
+                else:
+                    # Count as a failure
+                    self.handle_node_failure(node)
             except requests.exceptions.RequestException as e:
                 # This node can't be reached
                 print(f"Could not reach node {node}: {e}")
+                self.handle_node_failure(node)
                 # Decide if you want to remove the node or just skip it
                 # e.g., self.nodes.remove(node)
                 continue
@@ -205,6 +217,14 @@ class Blockchain:
             return True
 
         return False
+    
+    def handle_node_failure(self, node):
+        self.node_health[node]["failures"] += 1
+        if self.node_health[node]["failures"] > 3:
+            # Move node to quarantine set or remove it from active nodes
+            self.node_health[node]["quarantined"] = True
+            # Optionally remove from self.nodes if desired
+            self.nodes.remove(node)
     
     def register_node(self, address):
         """
@@ -225,25 +245,62 @@ class Blockchain:
         Synchronize the list of nodes with neighboring nodes.
         """
         new_nodes = set()
-
+        print("self.nodes = ", self.nodes)
         for node in self.nodes:
+            print("node = ", node)
+            if self.node_health[node]["quarantined"]:
+                print("quarantined")
+                continue
             try:
-                response = requests.get(f'http://{node}/nodes')
+                response = requests.get(f'http://{node}/nodes', timeout=15)
                 if response.status_code == 200:
                     data = response.json()
                     neighbor_nodes = data.get('nodes', [])
-                    new_nodes.update(neighbor_nodes)
+                    for n in neighbor_nodes:
+                        print("n = ",n)
+                        if n not in self.node_health:
+                            self.node_health[n] = {"failures": 0, "quarantined": False}
+                        # If quarantined, try again
+                        if self.node_health[n]["quarantined"]:
+                            # Try contacting n again
+                            if self.attempt_recovery_from_quarantine(n):
+                                # If successful, remove quarantine
+                                self.node_health[n]["quarantined"] = False
+                                self.node_health[n]["failures"] = 0
+
+                        # If node is not quarantined or successfully recovered
+                        if not self.node_health[n]["quarantined"]:
+                            new_nodes.add(n)
+                else:
+                    print(f"Could not retrieve nodes from {node}. Status Code: {response.status_code}")
             except requests.exceptions.RequestException:
-                # Skip nodes that are not reachable
-                pass
+                print("FEHLER1")
+                self.handle_node_failure(node)
+                continue
 
         # Update the local nodes list with new nodes discovered
         self.nodes.update(new_nodes)
         return True
+    
+    def attempt_recovery_from_quarantine(self, node):
+        """
+        Attempt to contact a quarantined node to see if it's now reachable.
+        Returns True if reachable and should be restored, False otherwise.
+        """
+        try:
+            response = requests.get(f'http://{node}/chain', timeout=15)
+            if response.status_code == 200:
+                print(f"Quarantined node {node} is now reachable. Removing quarantine.")
+                return True
+            else:
+                print(f"Quarantined node {node} responded with status code {response.status_code}, remaining quarantined.")
+        except requests.exceptions.RequestException:
+            print(f"Quarantined node {node} still unreachable.")
+        return False
 
     def register_with_network(self):
-        node_address = "http://"+get_public_ip()+":8317"
-        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        #node_address = "http://"+get_public_ip()+":8317"
+        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         if len(node_address)>7:
             for node in self.nodes:
@@ -265,7 +322,7 @@ class Blockchain:
                                 if node != node_address:
                                     try:
                                         url = f'http://{node}/nodes/register'
-                                        requests.post(url, json=payload)
+                                        requests.post(url, json=payload, timeout=15)
                                         print(f"Registered with node {node}")
                                     except requests.exceptions.RequestException:
                                         print(f"Could not register with node {node}")
@@ -298,8 +355,12 @@ blockchain_lock = threading.Lock()
 
 def consensus_worker():
     while True:
+        print("consensus_worker !!!")
+        time.sleep(10)  # Run every 10 seconds; adjust as needed
         with blockchain_lock:
+            print("consensus_worker2 !!!")
             try:
+                print("consensus_worker3 !!!")
                 replaced = blockchain.resolve_conflicts()
                 if replaced:
                     print("Our chain was replaced by a longer chain.")
@@ -307,12 +368,12 @@ def consensus_worker():
                     print("Our chain is authoritative.")
             except Exception as e:
                 print(f"Error running consensus algorithm: {e}")
-        time.sleep(10)  # Run every 10 seconds; adjust as needed
 
 def node_registration_worker():
     """
     Registers the node with the network once at startup.
     """
+    print("node_registration_worker !!!")
     with blockchain_lock:
         try:
             print("Registering with network...")
@@ -326,6 +387,7 @@ def node_sync_worker():
     Periodically synchronizes the node list.
     """
     while True:
+        print("node_sync_worker !!!")
         time.sleep(30)  # Adjust the interval as needed
         with blockchain_lock:
             try:
