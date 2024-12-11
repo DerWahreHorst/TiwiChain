@@ -28,7 +28,7 @@ class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', '1.2.3.4:8317'])
+        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
         self.node_health = {}
 
         for n in self.nodes:
@@ -237,6 +237,7 @@ class Blockchain:
         netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path
         if netloc not in self.nodes:
             self.nodes.add(netloc)
+            self.node_health[netloc] = {"failures": 0, "quarantined": False}
             return True
         return False
             
@@ -299,8 +300,8 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        #node_address = "http://"+get_public_ip()+":8317"
-        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        node_address = "http://"+get_public_ip()+":8317"
+        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         if len(node_address)>7:
             for node in self.nodes:
