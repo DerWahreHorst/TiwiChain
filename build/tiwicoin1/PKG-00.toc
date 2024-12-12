@@ -59,9 +59,6 @@
   ('lib-dynload/grp.cpython-39-darwin.so',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/grp.cpython-39-darwin.so',
    'EXTENSION'),
-  ('lib-dynload/unicodedata.cpython-39-darwin.so',
-   '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/unicodedata.cpython-39-darwin.so',
-   'EXTENSION'),
   ('lib-dynload/_lzma.cpython-39-darwin.so',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_lzma.cpython-39-darwin.so',
    'EXTENSION'),
@@ -149,6 +146,9 @@
   ('lib-dynload/_queue.cpython-39-darwin.so',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_queue.cpython-39-darwin.so',
    'EXTENSION'),
+  ('lib-dynload/unicodedata.cpython-39-darwin.so',
+   '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/unicodedata.cpython-39-darwin.so',
+   'EXTENSION'),
   ('lib-dynload/_multibytecodec.cpython-39-darwin.so',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_multibytecodec.cpython-39-darwin.so',
    'EXTENSION'),
@@ -212,16 +212,29 @@
   ('lib-dynload/_sha1.cpython-39-darwin.so',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/lib-dynload/_sha1.cpython-39-darwin.so',
    'EXTENSION'),
+  ('static/css/styles.css',
+   '/Users/jtiwi/Movies/TiwiCoin Blockchain/static/css/styles.css',
+   'DATA'),
+  ('static/js/app.js',
+   '/Users/jtiwi/Movies/TiwiCoin Blockchain/static/js/app.js',
+   'DATA'),
+  ('templates/index.html',
+   '/Users/jtiwi/Movies/TiwiCoin Blockchain/templates/index.html',
+   'DATA'),
   ('base_library.zip',
    '/Users/jtiwi/Movies/TiwiCoin Blockchain/build/tiwicoin1/base_library.zip',
+   'DATA'),
+  ('certifi/cacert.pem',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/certifi/cacert.pem',
    'DATA'),
   ('certifi/py.typed',
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/certifi/py.typed',
    'DATA'),
-  ('certifi/cacert.pem',
+  ('importlib_metadata-8.5.0.dist-info/INSTALLER',
    '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/certifi/cacert.pem',
+   'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/INSTALLER',
    'DATA'),
   ('importlib_metadata-8.5.0.dist-info/LICENSE',
    '/Users/jtiwi/Movies/TiwiCoin '
@@ -231,6 +244,10 @@
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/RECORD',
    'DATA'),
+  ('importlib_metadata-8.5.0.dist-info/WHEEL',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/WHEEL',
+   'DATA'),
   ('importlib_metadata-8.5.0.dist-info/METADATA',
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/METADATA',
@@ -239,94 +256,82 @@
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/top_level.txt',
    'DATA'),
-  ('importlib_metadata-8.5.0.dist-info/WHEEL',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/WHEEL',
-   'DATA'),
-  ('importlib_metadata-8.5.0.dist-info/INSTALLER',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/importlib_metadata-8.5.0.dist-info/INSTALLER',
-   'DATA'),
   ('Python3', 'Python3.framework/Versions/3.9/Python3', 'SYMLINK'),
-  ('itsdangerous-2.2.0.dist-info/WHEEL',
+  ('flask-3.1.0.dist-info/entry_points.txt',
    '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/WHEEL',
-   'DATA'),
-  ('flask-3.1.0.dist-info/REQUESTED',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/REQUESTED',
-   'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/INSTALLER',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/INSTALLER',
-   'DATA'),
-  ('werkzeug-3.1.3.dist-info/LICENSE.txt',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/LICENSE.txt',
-   'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/RECORD',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/RECORD',
-   'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/LICENSE.txt',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/LICENSE.txt',
+   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/entry_points.txt',
    'DATA'),
   ('werkzeug-3.1.3.dist-info/RECORD',
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/RECORD',
    'DATA'),
-  ('flask-3.1.0.dist-info/METADATA',
+  ('itsdangerous-2.2.0.dist-info/WHEEL',
    '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/METADATA',
-   'DATA'),
-  ('itsdangerous-2.2.0.dist-info/METADATA',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/METADATA',
-   'DATA'),
-  ('werkzeug-3.1.3.dist-info/WHEEL',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/WHEEL',
-   'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/METADATA',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/METADATA',
-   'DATA'),
-  ('werkzeug-3.1.3.dist-info/INSTALLER',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/INSTALLER',
-   'DATA'),
-  ('flask-3.1.0.dist-info/INSTALLER',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/INSTALLER',
-   'DATA'),
-  ('flask-3.1.0.dist-info/WHEEL',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/WHEEL',
-   'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/top_level.txt',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/top_level.txt',
-   'DATA'),
-  ('itsdangerous-2.2.0.dist-info/RECORD',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/RECORD',
-   'DATA'),
-  ('flask-3.1.0.dist-info/entry_points.txt',
-   '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/entry_points.txt',
+   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/WHEEL',
    'DATA'),
   ('flask-3.1.0.dist-info/LICENSE.txt',
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/LICENSE.txt',
    'DATA'),
-  ('itsdangerous-2.2.0.dist-info/INSTALLER',
+  ('werkzeug-3.1.3.dist-info/INSTALLER',
    '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/INSTALLER',
+   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/INSTALLER',
+   'DATA'),
+  ('werkzeug-3.1.3.dist-info/WHEEL',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/WHEEL',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/top_level.txt',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/top_level.txt',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/INSTALLER',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/INSTALLER',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/METADATA',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/METADATA',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/RECORD',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/RECORD',
+   'DATA'),
+  ('flask-3.1.0.dist-info/REQUESTED',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/REQUESTED',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/LICENSE.txt',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/LICENSE.txt',
+   'DATA'),
+  ('itsdangerous-2.2.0.dist-info/RECORD',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/RECORD',
+   'DATA'),
+  ('MarkupSafe-3.0.2.dist-info/WHEEL',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/WHEEL',
    'DATA'),
   ('flask-3.1.0.dist-info/RECORD',
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/RECORD',
+   'DATA'),
+  ('werkzeug-3.1.3.dist-info/LICENSE.txt',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/werkzeug-3.1.3.dist-info/LICENSE.txt',
+   'DATA'),
+  ('flask-3.1.0.dist-info/METADATA',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/METADATA',
+   'DATA'),
+  ('itsdangerous-2.2.0.dist-info/INSTALLER',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/INSTALLER',
+   'DATA'),
+  ('flask-3.1.0.dist-info/WHEEL',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/WHEEL',
    'DATA'),
   ('werkzeug-3.1.3.dist-info/METADATA',
    '/Users/jtiwi/Movies/TiwiCoin '
@@ -336,9 +341,13 @@
    '/Users/jtiwi/Movies/TiwiCoin '
    'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/LICENSE.txt',
    'DATA'),
-  ('MarkupSafe-3.0.2.dist-info/WHEEL',
+  ('itsdangerous-2.2.0.dist-info/METADATA',
    '/Users/jtiwi/Movies/TiwiCoin '
-   'Blockchain/venv/lib/python3.9/site-packages/MarkupSafe-3.0.2.dist-info/WHEEL',
+   'Blockchain/venv/lib/python3.9/site-packages/itsdangerous-2.2.0.dist-info/METADATA',
+   'DATA'),
+  ('flask-3.1.0.dist-info/INSTALLER',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/flask-3.1.0.dist-info/INSTALLER',
    'DATA'),
   ('Python3.framework/Python3', 'Versions/Current/Python3', 'SYMLINK'),
   ('Python3.framework/Resources', 'Versions/Current/Resources', 'SYMLINK'),

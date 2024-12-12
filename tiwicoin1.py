@@ -2,7 +2,7 @@ import hashlib
 import json
 import time
 from flask import Flask, request, jsonify, render_template
-from uuid import uuid4
+import uuid
 import requests
 from urllib.parse import urlparse
 import threading
@@ -30,6 +30,7 @@ class Blockchain:
         self.chain = []
         self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
         self.node_health = {}
+        self.node_id = str(uuid.uuid4())
 
         for n in self.nodes:
             self.node_health[n] = {"failures": 0, "quarantined": False}
@@ -225,7 +226,19 @@ class Blockchain:
             self.node_health[node]["quarantined"] = True
             # Optionally remove from self.nodes if desired
             self.nodes.remove(node)
-    
+
+    def is_local_node(self, address):
+        # Attempt to fetch the node_id from the given address
+        try:
+            response = requests.get(f"{address}/node_id", timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('node_id') == self.node_id:
+                    return True
+        except requests.exceptions.RequestException:
+            pass
+        return False
+
     def register_node(self, address):
         """
         Add a new node to the list of nodes.
@@ -233,6 +246,10 @@ class Blockchain:
         :param address: Address of the node. Eg. 'http://192.168.0.5:5000'
         :return: True if the node was added, False if it was already present
         """
+        # Before adding the node, check if it's the local node
+        if self.is_local_node(address):
+            print("Skipping: The given address leads to the current node itself.")
+            return False
         parsed_url = urlparse(address)
         netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path
         if netloc not in self.nodes:
@@ -345,9 +362,6 @@ class Blockchain:
 
 app = Flask(__name__)
 
-# Generate a globally unique address for this node
-node_identifier = str(uuid4()).replace('-', '')
-
 # Instantiate the Blockchain
 blockchain = Blockchain()
 
@@ -356,12 +370,9 @@ blockchain_lock = threading.Lock()
 
 def consensus_worker():
     while True:
-        print("consensus_worker !!!")
         time.sleep(10)  # Run every 10 seconds; adjust as needed
         with blockchain_lock:
-            print("consensus_worker2 !!!")
             try:
-                print("consensus_worker3 !!!")
                 replaced = blockchain.resolve_conflicts()
                 if replaced:
                     print("Our chain was replaced by a longer chain.")
@@ -418,6 +429,10 @@ def start_background_tasks():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/node_id', methods=['GET'])
+def get_node_id():
+    return jsonify({'node_id': blockchain.node_id}), 200
 
 @app.route('/mine', methods=['POST'])
 def mine():

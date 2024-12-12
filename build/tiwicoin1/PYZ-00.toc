@@ -319,6 +319,70 @@
   ('distutils.log',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/distutils/log.py',
    'PYMODULE'),
+  ('ecdsa',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/__init__.py',
+   'PYMODULE'),
+  ('ecdsa._compat',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/_compat.py',
+   'PYMODULE'),
+  ('ecdsa._sha3',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/_sha3.py',
+   'PYMODULE'),
+  ('ecdsa._version',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/_version.py',
+   'PYMODULE'),
+  ('ecdsa.curves',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/curves.py',
+   'PYMODULE'),
+  ('ecdsa.der',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/der.py',
+   'PYMODULE'),
+  ('ecdsa.ecdh',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/ecdh.py',
+   'PYMODULE'),
+  ('ecdsa.ecdsa',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/ecdsa.py',
+   'PYMODULE'),
+  ('ecdsa.eddsa',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/eddsa.py',
+   'PYMODULE'),
+  ('ecdsa.ellipticcurve',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/ellipticcurve.py',
+   'PYMODULE'),
+  ('ecdsa.errors',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/errors.py',
+   'PYMODULE'),
+  ('ecdsa.keys',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/keys.py',
+   'PYMODULE'),
+  ('ecdsa.numbertheory',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/numbertheory.py',
+   'PYMODULE'),
+  ('ecdsa.rfc6979',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/rfc6979.py',
+   'PYMODULE'),
+  ('ecdsa.ssh',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/ssh.py',
+   'PYMODULE'),
+  ('ecdsa.util',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/ecdsa/util.py',
+   'PYMODULE'),
   ('email',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/email/__init__.py',
    'PYMODULE'),
@@ -984,6 +1048,10 @@
    'PYMODULE'),
   ('signal',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/signal.py',
+   'PYMODULE'),
+  ('six',
+   '/Users/jtiwi/Movies/TiwiCoin '
+   'Blockchain/venv/lib/python3.9/site-packages/six.py',
    'PYMODULE'),
   ('socket',
    '/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/socket.py',
