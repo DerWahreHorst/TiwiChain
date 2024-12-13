@@ -317,8 +317,8 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        #node_address = "http://"+get_public_ip()+":8317"
-        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        node_address = "http://"+get_public_ip()+":8317"
+        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         if len(node_address)>7:
             for node in self.nodes:
