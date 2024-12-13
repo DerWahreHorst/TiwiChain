@@ -201,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
             recipient_public_key: recipient,
             amount: amount
         };
-
         const txDataString = JSON.stringify(txData);
 
         // Sign the transaction data
@@ -229,11 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
             messagesDiv.textContent = 'Error sending transaction.';
         });
     });
-
-    // Helper function to compute SHA-256 hash
-    function sha256(message) {
-        return sha256Lib.sha256(message);
-    }
 
 
     // Handle mine block button click

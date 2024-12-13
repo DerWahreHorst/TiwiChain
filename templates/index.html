@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+    <img src="{{ url_for('static', filename='images/coin1.png') }}" alt="Coin Icon" class="icon">
     <h1>Blockchain Explorer</h1>
 
     <!-- Node List Section -->
@@ -24,10 +25,6 @@
     <textarea id="public-key" readonly></textarea>
     <p>Your Private Key (Keep this secret!):</p>
     <textarea id="private-key" readonly></textarea>
-    <!-- Include elliptic library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
-    <!-- Include js-sha256 library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     
 
     <!-- Transaction Form -->
@@ -38,7 +35,7 @@
         <label for="recipient">Recipient Address:</label><br>
         <input type="text" id="recipient" name="recipient" required><br><br>
         <label for="amount">Amount:</label><br>
-        <input type="number" id="amount" name="amount" required><br><br>
+        <input type="number" id="amount" name="amount" step="any" min="0" required><br><br>
         <button type="submit">Send Transaction</button>
     </form>
 
@@ -55,6 +52,10 @@
         <!-- Blockchain data will be injected here -->
     </div>
 
+    <!-- Include elliptic library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+    <!-- Include js-sha256 library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

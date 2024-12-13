@@ -6,7 +6,7 @@ import uuid
 import requests
 from urllib.parse import urlparse
 import threading
-from ecdsa import VerifyingKey, SECP256k1, BadSignatureError
+from ecdsa import VerifyingKey, SECP256k1, BadSignatureError, util
 
 
 def get_public_ip():
@@ -317,8 +317,8 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        node_address = "http://"+get_public_ip()+":8317"
-        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        #node_address = "http://"+get_public_ip()+":8317"
+        node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
 
         if len(node_address)>7:
             for node in self.nodes:
@@ -483,21 +483,21 @@ def new_transaction():
 
     # Reconstruct transaction data for verification
     tx_data = {
-        'sender_public_key': sender_public_key,
-        'recipient_public_key': recipient_public_key,
-        'amount': amount
+        'sender_public_key':sender_public_key,
+        'recipient_public_key':recipient_public_key,
+        'amount':amount
     }
-    tx_data_string = json.dumps(tx_data, sort_keys=True)
+    tx_data_string = json.dumps(tx_data, separators=(',', ':'))
 
     # Verify the signature
     try:
         vk = VerifyingKey.from_string(bytes.fromhex(sender_public_key), curve=SECP256k1)
-        is_valid = vk.verify(bytes.fromhex(signature), tx_data_string.encode('utf-8'), hashfunc=hashlib.sha256)
+        is_valid = vk.verify(bytes.fromhex(signature), tx_data_string.encode('utf-8'), hashfunc=hashlib.sha256, sigdecode=util.sigdecode_der)
     except (BadSignatureError, ValueError, Exception) as e:
         is_valid = False
 
     if not is_valid:
-        return 'Invalid signature', 400
+        return jsonify({'message': 'Invalid signature'}), 400
 
     # Create a new Transaction
     index = blockchain.new_transaction(sender_public_key, recipient_public_key, amount, signature)
