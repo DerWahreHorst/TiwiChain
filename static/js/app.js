@@ -143,7 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p><strong>Transactions:</strong></p>
                         <ul>
                             ${block.transactions.map(tx => `
-                                <li><strong>From:</strong> ${tx.sender_public_key}<br>
+                                <li>
+                                <strong>ID:</strong> ${tx.transaction_id}</li><br>
+                                <strong>From:</strong> ${tx.sender_public_key}<br>
                                 <strong>To:</strong> ${tx.recipient_public_key}<br>
                                 <strong>Amount:</strong> ${tx.amount}</li>
                             `).join('')}
@@ -174,12 +176,23 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(fetchNodes, refreshInterval);
     setInterval(fetchBalances, refreshInterval);
 
+
+    function generateUUID() {
+        // RFC4122 version 4 UUID generator using crypto.getRandomValues
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[xy]/g, function(c) {
+            const r = crypto.getRandomValues(new Uint8Array(1))[0] & 15;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     // Handle transaction form submission
     const transactionForm = document.getElementById('transaction-form');
     // Handle transaction form submission
     transactionForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
+        const transaction_id = generateUUID();
         const recipient = document.getElementById('recipient').value.trim();
         const amountValue = document.getElementById('amount').value;
         const amount = parseFloat(amountValue);
@@ -197,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Create the transaction data to sign
         const txData = {
+            transaction_id: transaction_id,
             sender_public_key: senderPublicKey,
             recipient_public_key: recipient,
             amount: amount

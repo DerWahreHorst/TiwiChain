@@ -31,6 +31,7 @@ class Blockchain:
         self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
+        self.used_transaction_ids = set()  # To track used transaction IDs
 
         for n in self.nodes:
             self.node_health[n] = {"failures": 0, "quarantined": False}
@@ -60,8 +61,13 @@ class Blockchain:
         self.chain.append(block)
         return block
 
-    def new_transaction(self, sender_public_key, recipient_public_key, amount, signature):
+    def new_transaction(self, transaction_id, sender_public_key, recipient_public_key, amount, signature):
+        if transaction_id in self.used_transaction_ids:
+            raise ValueError('Duplicate transaction ID')
+
+        self.used_transaction_ids.add(transaction_id)
         self.current_transactions.append({
+            'transaction_id': transaction_id,
             'sender_public_key': sender_public_key,
             'recipient_public_key': recipient_public_key,
             'amount': amount,
@@ -150,12 +156,14 @@ class Blockchain:
         """
         last_block = chain[0]
         current_index = 1
+        seen_transaction_ids = set()
 
         while current_index < len(chain):
             block = chain[current_index]
             print(f'{last_block}')
             print(f'{block}')
             print("\n-----------\n")
+
             # Check that the hash of the block is correct
             if block['previous_hash'] != self.hash(last_block):
                 return False
@@ -164,10 +172,18 @@ class Blockchain:
             if not self.valid_proof(last_block['proof'], block['proof'], block['previous_hash']):
                 return False
 
+            # Check for duplicate transaction IDs
+            for tx in block['transactions']:
+                tx_id = tx['transaction_id']
+                if tx_id in seen_transaction_ids:
+                    return False  # Duplicate transaction ID found
+                seen_transaction_ids.add(tx_id)
+
             last_block = block
             current_index += 1
 
         return True
+
 
     def resolve_conflicts(self):
         """
@@ -317,8 +333,9 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        node_address = "http://"+get_public_ip()+":8317"
+        #node_address = "http://"+get_public_ip()+":8317"
         #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
+        node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
 
         if len(node_address)>7:
             for node in self.nodes:
@@ -353,6 +370,82 @@ class Blockchain:
 
             #register own address
             self.register_node(node_address)
+
+    def synchronize_transactions(self):
+        """
+        Synchronize current_transactions with all nodes in the network.
+        Fetches pending transactions from each node and merges them locally,
+        ensuring no duplicates based on transaction_id.
+        """
+        for node in self.nodes:
+            node_url = f'http://{node}/transactions/pending'
+            try:
+                response = requests.get(node_url, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    node_transactions = data.get('pending_transactions', [])
+                    for tx in node_transactions:
+                        tx_id = tx.get('transaction_id')
+                        if tx_id and tx_id not in self.used_transaction_ids:
+                            # Verify the transaction before adding
+                            if self.verify_transaction(tx):
+                                self.current_transactions.append(tx)
+                                self.used_transaction_ids.add(tx_id)
+                else:
+                    print(f"Failed to fetch transactions from {node}. Status Code: {response.status_code}")
+                    self.handle_node_failure(node)
+            except requests.exceptions.RequestException as e:
+                print(f"Error fetching transactions from {node}: {e}")
+                self.handle_node_failure(node)
+
+    def verify_transaction(self, transaction):
+        """
+        Verify the integrity and validity of a transaction.
+        This includes signature verification and any other necessary checks.
+        
+        :param transaction: <dict> The transaction data.
+        :return: <bool> True if valid, False otherwise.
+        """
+        required_fields = ['transaction_id', 'sender_public_key', 'recipient_public_key', 'amount', 'signature']
+        if not all(field in transaction for field in required_fields):
+            print("Transaction is missing required fields.")
+            return False
+
+        transaction_id = transaction['transaction_id']
+        sender_public_key = transaction['sender_public_key']
+        recipient_public_key = transaction['recipient_public_key']
+        amount = transaction['amount']
+        signature = transaction['signature']
+
+        # Reconstruct transaction data for verification
+        tx_data = {
+            'transaction_id': transaction_id,
+            'sender_public_key': sender_public_key,
+            'recipient_public_key': recipient_public_key,
+            'amount': amount
+        }
+        tx_data_string = json.dumps(tx_data, separators=(',', ':'))
+
+        # Verify the signature
+        try:
+            vk = VerifyingKey.from_string(bytes.fromhex(sender_public_key), curve=SECP256k1)
+            is_valid = vk.verify(
+                bytes.fromhex(signature),
+                tx_data_string.encode('utf-8'),
+                hashfunc=hashlib.sha256,
+                sigdecode=util.sigdecode_der
+            )
+        except (BadSignatureError, ValueError, Exception) as e:
+            print(f"Signature verification failed for transaction {transaction_id}: {e}")
+            is_valid = False
+
+        if not is_valid:
+            print(f"Invalid signature for transaction {transaction_id}.")
+            return False
+
+        # Additional validation checks can be added here (e.g., sufficient balance)
+
+        return True
 
 
 
@@ -409,6 +502,21 @@ def node_sync_worker():
             except Exception as e:
                 print(f"Error synchronizing nodes: {e}")
 
+def transactions_sync_worker():
+    """
+    Periodically synchronize pending transactions across all nodes.
+    """
+    while True:
+        with blockchain_lock:
+            try:
+                print("Synchronizing pending transactions...")
+                blockchain.synchronize_transactions()
+                print("Transaction synchronization complete.")
+            except Exception as e:
+                print(f"Error during transaction synchronization: {e}")
+        time.sleep(30)  # Adjust the interval as needed (e.g., every 30 seconds)
+
+
 def start_background_tasks():
     # Start node registration thread
     node_registration_thread = threading.Thread(target=node_registration_worker)
@@ -424,6 +532,11 @@ def start_background_tasks():
     consensus_thread = threading.Thread(target=consensus_worker)
     consensus_thread.daemon = True  # Daemonize thread to exit when main thread exits
     consensus_thread.start()
+
+    # Start transactions synchronization thread
+    transactions_sync_thread = threading.Thread(target=transactions_sync_worker)
+    transactions_sync_thread.daemon = True
+    transactions_sync_thread.start()
 
 
 @app.route('/')
@@ -472,10 +585,11 @@ def mine():
 def new_transaction():
     values = request.get_json()
 
-    required = ['sender_public_key', 'recipient_public_key', 'amount', 'signature']
+    required = ['transaction_id', 'sender_public_key', 'recipient_public_key', 'amount', 'signature']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
+    transaction_id = values['transaction_id']
     sender_public_key = values['sender_public_key']
     recipient_public_key = values['recipient_public_key']
     amount = values['amount']
@@ -483,27 +597,46 @@ def new_transaction():
 
     # Reconstruct transaction data for verification
     tx_data = {
-        'sender_public_key':sender_public_key,
-        'recipient_public_key':recipient_public_key,
-        'amount':amount
+        'transaction_id': transaction_id,
+        'sender_public_key': sender_public_key,
+        'recipient_public_key': recipient_public_key,
+        'amount': amount
     }
     tx_data_string = json.dumps(tx_data, separators=(',', ':'))
 
     # Verify the signature
     try:
         vk = VerifyingKey.from_string(bytes.fromhex(sender_public_key), curve=SECP256k1)
-        is_valid = vk.verify(bytes.fromhex(signature), tx_data_string.encode('utf-8'), hashfunc=hashlib.sha256, sigdecode=util.sigdecode_der)
+        is_valid = vk.verify(
+            bytes.fromhex(signature),
+            tx_data_string.encode('utf-8'),
+            hashfunc=hashlib.sha256,
+            sigdecode=util.sigdecode_der
+        )
     except (BadSignatureError, ValueError, Exception) as e:
         is_valid = False
 
     if not is_valid:
         return jsonify({'message': 'Invalid signature'}), 400
 
-    # Create a new Transaction
-    index = blockchain.new_transaction(sender_public_key, recipient_public_key, amount, signature)
+    # Attempt to create a new transaction
+    try:
+        with blockchain_lock:
+            index = blockchain.new_transaction(
+                transaction_id,
+                sender_public_key,
+                recipient_public_key,
+                amount,
+                signature
+            )
+    except ValueError as ve:
+        return jsonify({'message': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'message': 'An error occurred while adding the transaction.'}), 500
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
+
 
 @app.route('/chain', methods=['GET'])
 def full_chain():
@@ -591,6 +724,14 @@ def get_balances():
             'balance': bal
         })
     return jsonify(result), 200
+
+@app.route('/transactions/pending', methods=['GET'])
+def get_pending_transactions():
+    response = {
+        'pending_transactions': blockchain.current_transactions
+    }
+    return jsonify(response), 200
+
 
 
 
