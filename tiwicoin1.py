@@ -65,6 +65,12 @@ class Blockchain:
         if transaction_id in self.used_transaction_ids:
             raise ValueError('Duplicate transaction ID')
 
+        # If it's not a coinbase transaction, verify sender's balance
+        if sender_public_key != '0':
+            sender_balance = self.get_balance(sender_public_key)
+            if sender_balance < amount:
+                raise ValueError('Insufficient balance')
+
         self.used_transaction_ids.add(transaction_id)
         self.current_transactions.append({
             'transaction_id': transaction_id,
@@ -172,6 +178,24 @@ class Blockchain:
             if not self.valid_proof(last_block['proof'], block['proof'], block['previous_hash']):
                 return False
 
+            # Check for duplicate transaction IDs and validate transactions
+            coinbase_transactions = [tx for tx in block['transactions'] if tx['sender_public_key'] == '0']
+            if len(coinbase_transactions) != 1:
+                print("Invalid number of coinbase transactions.")
+                return False
+
+            coinbase_tx = coinbase_transactions[0]
+            expected_reward = self.get_expected_reward()
+            if coinbase_tx['amount'] != expected_reward:
+                print("Invalid coinbase transaction amount.")
+                return False
+
+            # Ensure coinbase transaction ID is unique
+            if coinbase_tx['transaction_id'] in seen_transaction_ids:
+                print("Duplicate coinbase transaction ID.")
+                return False
+            seen_transaction_ids.add(coinbase_tx['transaction_id'])
+
             # Check for duplicate transaction IDs
             for tx in block['transactions']:
                 tx_id = tx['transaction_id']
@@ -179,10 +203,23 @@ class Blockchain:
                     return False  # Duplicate transaction ID found
                 seen_transaction_ids.add(tx_id)
 
+                # Skip signature verification for coinbase transactions
+                if tx['sender_public_key'] == '0':
+                    continue
+
+                if not self.verify_transaction(tx):
+                    print(f"Invalid transaction: {tx_id}")
+                    return False
+
             last_block = block
             current_index += 1
 
         return True
+    
+    
+    def get_expected_reward(self):
+        # Define your block reward here
+        return 1  # Example: 50 coins per block
 
 
     def resolve_conflicts(self):
@@ -562,8 +599,12 @@ def mine():
         last_block = blockchain.last_block
         proof = blockchain.proof_of_work(last_block)
 
+        # Create a unique transaction ID for the reward
+        reward_transaction_id = str(uuid.uuid4())
+
         # Create a reward transaction to the miner
         blockchain.new_transaction(
+            transaction_id=reward_transaction_id,
             sender_public_key='0',  # '0' signifies a new coin
             recipient_public_key=miner_public_key,
             amount=1,
@@ -578,6 +619,7 @@ def mine():
         'message': "New Block Forged",
         'block': block,
     }
+    print("response = ", response)
     return jsonify(response), 200
 
 

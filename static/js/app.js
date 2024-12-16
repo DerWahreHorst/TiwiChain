@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <ul>
                             ${block.transactions.map(tx => `
                                 <li>
-                                <strong>ID:</strong> ${tx.transaction_id}</li><br>
+                                <strong>ID:</strong> ${tx.transaction_id}<br>
                                 <strong>From:</strong> ${tx.sender_public_key}<br>
                                 <strong>To:</strong> ${tx.recipient_public_key}<br>
                                 <strong>Amount:</strong> ${tx.amount}</li>
