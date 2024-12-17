@@ -172,10 +172,12 @@ class Blockchain:
 
             # Check that the hash of the block is correct
             if block['previous_hash'] != self.hash(last_block):
+                print("invalid hash")
                 return False
 
             # Check that the Proof of Work is correct
             if not self.valid_proof(last_block['proof'], block['proof'], block['previous_hash']):
+                print("invalid proof")
                 return False
 
             # Check for duplicate transaction IDs and validate transactions
@@ -198,14 +200,17 @@ class Blockchain:
 
             # Check for duplicate transaction IDs
             for tx in block['transactions']:
-                tx_id = tx['transaction_id']
-                if tx_id in seen_transaction_ids:
-                    return False  # Duplicate transaction ID found
-                seen_transaction_ids.add(tx_id)
-
                 # Skip signature verification for coinbase transactions
                 if tx['sender_public_key'] == '0':
                     continue
+
+                tx_id = tx['transaction_id']
+                print("tx_id = ", tx_id)
+                print("seen_transaction_ids = ", seen_transaction_ids)
+                if tx_id in seen_transaction_ids:
+                    print("Duplicate transaction ID found")
+                    return False  # Duplicate transaction ID found
+                seen_transaction_ids.add(tx_id)
 
                 if not self.verify_transaction(tx):
                     print(f"Invalid transaction: {tx_id}")
@@ -300,9 +305,9 @@ class Blockchain:
         :return: True if the node was added, False if it was already present
         """
         # Before adding the node, check if it's the local node
-        if self.is_local_node(address):
-            print("Skipping: The given address leads to the current node itself.")
-            return False
+        #if self.is_local_node(address):
+        #    print("Skipping: The given address leads to the current node itself.")
+        #    return False
         parsed_url = urlparse(address)
         netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path
         if netloc not in self.nodes:

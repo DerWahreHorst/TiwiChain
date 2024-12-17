@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.length > 0) {
                     const table = document.createElement('table');
-                    table.style.borderCollapse = 'collapse';
+                    //table.style.borderCollapse = 'collapse';
+                    table.id = "rounded-table";
 
                     // Create table header
                     const thead = document.createElement('thead');
@@ -18,12 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const publicKeyHeader = document.createElement('th');
                     publicKeyHeader.textContent = 'Public Key';
-                    publicKeyHeader.style.border = '1px solid #ccc';
+                    //publicKeyHeader.style.borderbottom = '1px solid #ccc';
                     publicKeyHeader.style.padding = '5px';
 
                     const balanceHeader = document.createElement('th');
                     balanceHeader.textContent = 'Balance';
-                    balanceHeader.style.border = '1px solid #ccc';
+                    //balanceHeader.style.borderbottom = '1px solid #ccc';
                     balanceHeader.style.padding = '5px';
 
                     headerRow.appendChild(publicKeyHeader);
@@ -39,12 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         const pubKeyCell = document.createElement('td');
                         pubKeyCell.textContent = item.public_key;
-                        pubKeyCell.style.border = '1px solid #ccc';
+                        //pubKeyCell.style.border = '0px solid #ccc';
                         pubKeyCell.style.padding = '5px';
 
                         const balanceCell = document.createElement('td');
                         balanceCell.textContent = item.balance;
-                        balanceCell.style.border = '1px solid #ccc';
+                        //balanceCell.style.border = '0px solid #ccc';
                         balanceCell.style.padding = '5px';
 
                         row.appendChild(pubKeyCell);
@@ -145,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${block.transactions.map(tx => `
                                 <li>
                                 <strong>ID:</strong> ${tx.transaction_id}<br>
-                                <strong>From:</strong> ${tx.sender_public_key}<br>
-                                <strong>To:</strong> ${tx.recipient_public_key}<br>
+                                <strong>From:</strong> <span style="font-size: 0.5em;">${tx.sender_public_key}</span><br>
+                                <strong>To:</strong> <span style="font-size: 0.5em;">${tx.recipient_public_key}</span><br>
                                 <strong>Amount:</strong> ${tx.amount}</li>
                             `).join('')}
                         </ul>
@@ -172,9 +173,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up automatic refresh for the blockchain section
     const refreshInterval = 5000; // Refresh every 30 seconds (adjust as needed)
-    setInterval(fetchChain, refreshInterval);
-    setInterval(fetchNodes, refreshInterval);
-    setInterval(fetchBalances, refreshInterval);
+    //setInterval(fetchChain, refreshInterval);
+    //setInterval(fetchNodes, refreshInterval);
+    //setInterval(fetchBalances, refreshInterval);
 
 
     function generateUUID() {
