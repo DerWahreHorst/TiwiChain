@@ -146,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${block.transactions.map(tx => `
                                 <li>
                                 <strong>ID:</strong> ${tx.transaction_id}<br>
-                                <strong>From:</strong> <span style="font-size: 0.5em;">${tx.sender_public_key}</span><br>
-                                <strong>To:</strong> <span style="font-size: 0.5em;">${tx.recipient_public_key}</span><br>
+                                <strong>From:</strong> <span style="font-size: 0.7em;">${tx.sender_public_key}</span><br>
+                                <strong>To:</strong> <span style="font-size: 0.7em;">${tx.recipient_public_key}</span><br>
                                 <strong>Amount:</strong> ${tx.amount}</li>
                             `).join('')}
                         </ul>

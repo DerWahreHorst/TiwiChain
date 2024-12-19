@@ -37,7 +37,14 @@ class Blockchain:
             self.node_health[n] = {"failures": 0, "quarantined": False}
 
         # Create the genesis block
-        self.new_block(previous_hash=1, proof=100)
+        block = {
+            'index': len(self.chain) + 1,
+            'timestamp': time.time(),
+            'transactions': self.current_transactions,
+            'proof': 100,
+            'previous_hash': 1,
+        }
+        self.chain.append(block)
 
     def new_block(self, proof, previous_hash=None):
         """
@@ -52,7 +59,7 @@ class Blockchain:
             'timestamp': time.time(),
             'transactions': self.current_transactions,
             'proof': proof,
-            'previous_hash': previous_hash or self.hash(self.chain[-1]),
+            'previous_hash': 1,
         }
 
         # Reset the current list of transactions
@@ -121,7 +128,7 @@ class Blockchain:
         return self.chain[-1]
 
         
-    def proof_of_work(self, last_block):
+    def proof_of_work(self, miner_public_key):
         """
         Bitcoin's SHA-256 mining algorithm:
         - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
@@ -130,17 +137,36 @@ class Blockchain:
         :param last_block: <dict> last Block
         :return: <int>
         """
-        last_proof = last_block['proof']
-        last_hash = self.hash(last_block)
+        temp_transactions = self.current_transactions[:]
+        
+        # Create a unique transaction ID for the reward
+        reward_transaction_id = str(uuid.uuid4())
+        # Create a reward transaction to the miner
+        temp_transactions.append({
+            'transaction_id': reward_transaction_id,
+            'sender_public_key': '0',  # '0' signifies a new coin
+            'recipient_public_key': miner_public_key,
+            'amount': 1,
+            'signature': ''  # No signature needed for mining reward
+        })
 
         proof = 0
-        while self.valid_proof(last_proof, proof, last_hash) is False:
+        block = {
+            'index': len(self.chain) + 1,
+            'timestamp': time.time(),
+            'transactions': temp_transactions,
+            'proof': proof,
+            'previous_hash': self.hash(self.chain[-1]),
+        }
+        guess_hash = self.hash(block)
+        while guess_hash[:4] != "0000":
             proof += 1
+            block['proof'] = proof
+            guess_hash = self.hash(block)
 
-        return proof
+        return block
 
-    @staticmethod
-    def valid_proof(last_proof, proof, last_hash):
+    def valid_proof(self, block):
         """
         Validates the Proof
 
@@ -149,8 +175,7 @@ class Blockchain:
         :param last_hash: <str> The hash of the Previous Block
         :return: <bool> True if correct, False if not.
         """
-        guess = f'{last_proof}{proof}{last_hash}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
+        guess_hash =  self.hash(block)
         return guess_hash[:4] == "0000"
 
     def valid_chain(self, chain):
@@ -176,7 +201,7 @@ class Blockchain:
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], block['proof'], block['previous_hash']):
+            if not self.valid_proof(block):
                 print("invalid proof")
                 return False
 
@@ -601,30 +626,16 @@ def mine():
 
     with blockchain_lock:
         # Run proof of work algorithm
-        last_block = blockchain.last_block
-        proof = blockchain.proof_of_work(last_block)
-
-        # Create a unique transaction ID for the reward
-        reward_transaction_id = str(uuid.uuid4())
-
-        # Create a reward transaction to the miner
-        blockchain.new_transaction(
-            transaction_id=reward_transaction_id,
-            sender_public_key='0',  # '0' signifies a new coin
-            recipient_public_key=miner_public_key,
-            amount=1,
-            signature=''  # No signature needed for mining reward
-        )
-
-        # Forge the new Block
-        previous_hash = blockchain.hash(last_block)
-        block = blockchain.new_block(proof, previous_hash)
+        block = blockchain.proof_of_work(miner_public_key)
+        blockchain.chain.append(block)        # Reset the current list of transactions
+        blockchain.current_transactions = []
 
     response = {
         'message': "New Block Forged",
         'block': block,
     }
     print("response = ", response)
+    print("new block = ",block)
     return jsonify(response), 200
 
 
