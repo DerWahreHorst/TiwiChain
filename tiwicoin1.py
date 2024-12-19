@@ -32,6 +32,7 @@ class Blockchain:
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
         self.used_transaction_ids = set()  # To track used transaction IDs
+        self.transaction_fee = 0.1
 
         for n in self.nodes:
             self.node_health[n] = {"failures": 0, "quarantined": False}
@@ -75,7 +76,7 @@ class Blockchain:
         # If it's not a coinbase transaction, verify sender's balance
         if sender_public_key != '0':
             sender_balance = self.get_balance(sender_public_key)
-            if sender_balance < amount:
+            if sender_balance < amount+self.transaction_fee:
                 raise ValueError('Insufficient balance')
 
         self.used_transaction_ids.add(transaction_id)
@@ -93,7 +94,19 @@ class Blockchain:
         for block in self.chain:
             for tx in block['transactions']:
                 if tx['sender_public_key'] == public_key:
-                    balance -= tx['amount']
+                    balance -= tx['amount']-self.transaction_fee
+                if tx['recipient_public_key'] == public_key:
+                    balance += tx['amount']
+        return balance
+    
+    def get_balance_for_chain_untill_index(self, public_key, chain, index):
+        balance = 0
+        current_index = 1
+        while current_index < index:
+            block = chain[current_index]
+            for tx in block['transactions']:
+                if tx['sender_public_key'] == public_key:
+                    balance -= tx['amount']-self.transaction_fee
                 if tx['recipient_public_key'] == public_key:
                     balance += tx['amount']
         return balance
@@ -230,8 +243,7 @@ class Blockchain:
                     continue
 
                 tx_id = tx['transaction_id']
-                print("tx_id = ", tx_id)
-                print("seen_transaction_ids = ", seen_transaction_ids)
+
                 if tx_id in seen_transaction_ids:
                     print("Duplicate transaction ID found")
                     return False  # Duplicate transaction ID found
@@ -240,6 +252,9 @@ class Blockchain:
                 if not self.verify_transaction(tx):
                     print(f"Invalid transaction: {tx_id}")
                     return False
+                
+                if self.get_balance_for_chain_untill_index(tx['sender_public_key'], chain, current_index) < 0:
+                    print("negative balance occured")
 
             last_block = block
             current_index += 1
