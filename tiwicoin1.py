@@ -87,6 +87,7 @@ class Blockchain:
                     balance -= tx['amount']+self.transaction_fee
                 if tx['recipient_public_key'] == public_key:
                     balance += tx['amount']
+            current_index += 1
         return balance
     
     def get_all_addresses(self):
@@ -233,10 +234,11 @@ class Blockchain:
                 
                 if self.get_balance_for_chain_untill_index(tx['sender_public_key'], chain, current_index) < 0:
                     print("negative balance occured")
+                    return False
 
             last_block = block
             current_index += 1
-
+        print("chain valid!!!")
         return True
     
     
