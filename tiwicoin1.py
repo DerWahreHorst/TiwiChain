@@ -69,32 +69,32 @@ class Blockchain:
         self.chain.append(block)
         return block
 
-    def new_transaction(self, transaction_id, sender_public_key, recipient_public_key, amount, signature):
-        if transaction_id in self.used_transaction_ids:
-            raise ValueError('Duplicate transaction ID')
+    # def new_transaction(self, transaction_id, sender_public_key, recipient_public_key, amount, signature):
+    #     if transaction_id in self.used_transaction_ids:
+    #         raise ValueError('Duplicate transaction ID')
 
-        # If it's not a coinbase transaction, verify sender's balance
-        if sender_public_key != '0':
-            sender_balance = self.get_balance(sender_public_key)
-            if sender_balance < amount+self.transaction_fee:
-                raise ValueError('Insufficient balance')
+    #     # If it's not a coinbase transaction, verify sender's balance
+    #     if sender_public_key != '0':
+    #         sender_balance = self.get_balance(sender_public_key)
+    #         if sender_balance < amount+self.transaction_fee:
+    #             raise ValueError('Insufficient balance')
 
-        self.used_transaction_ids.add(transaction_id)
-        self.current_transactions.append({
-            'transaction_id': transaction_id,
-            'sender_public_key': sender_public_key,
-            'recipient_public_key': recipient_public_key,
-            'amount': amount,
-            'signature': signature
-        })
-        return self.last_block['index'] + 1
+    #     self.used_transaction_ids.add(transaction_id)
+    #     self.current_transactions.append({
+    #         'transaction_id': transaction_id,
+    #         'sender_public_key': sender_public_key,
+    #         'recipient_public_key': recipient_public_key,
+    #         'amount': amount,
+    #         'signature': signature
+    #     })
+    #     return self.last_block['index'] + 1
     
     def get_balance(self, public_key):
         balance = 0
         for block in self.chain:
             for tx in block['transactions']:
                 if tx['sender_public_key'] == public_key:
-                    balance -= tx['amount']-self.transaction_fee
+                    balance -= tx['amount']+self.transaction_fee
                 if tx['recipient_public_key'] == public_key:
                     balance += tx['amount']
         return balance
@@ -106,7 +106,7 @@ class Blockchain:
             block = chain[current_index]
             for tx in block['transactions']:
                 if tx['sender_public_key'] == public_key:
-                    balance -= tx['amount']-self.transaction_fee
+                    balance -= tx['amount']+self.transaction_fee
                 if tx['recipient_public_key'] == public_key:
                     balance += tx['amount']
         return balance
