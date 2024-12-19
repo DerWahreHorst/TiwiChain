@@ -47,47 +47,25 @@ class Blockchain:
         }
         self.chain.append(block)
 
-    def new_block(self, proof, previous_hash=None):
-        """
-        Create a new Block in the Blockchain
+    def new_transaction(self, transaction_id, sender_public_key, recipient_public_key, amount, signature):
+        if transaction_id in self.used_transaction_ids:
+            raise ValueError('Duplicate transaction ID')
 
-        :param proof: The proof given by the Proof of Work algorithm
-        :param previous_hash: Hash of previous Block
-        :return: New Block
-        """
-        block = {
-            'index': len(self.chain) + 1,
-            'timestamp': time.time(),
-            'transactions': self.current_transactions,
-            'proof': proof,
-            'previous_hash': 1,
-        }
+        # If it's not a coinbase transaction, verify sender's balance
+        if sender_public_key != '0':
+            sender_balance = self.get_balance(sender_public_key)
+            if sender_balance < amount+self.transaction_fee:
+                raise ValueError('Insufficient balance')
 
-        # Reset the current list of transactions
-        self.current_transactions = []
-
-        self.chain.append(block)
-        return block
-
-    # def new_transaction(self, transaction_id, sender_public_key, recipient_public_key, amount, signature):
-    #     if transaction_id in self.used_transaction_ids:
-    #         raise ValueError('Duplicate transaction ID')
-
-    #     # If it's not a coinbase transaction, verify sender's balance
-    #     if sender_public_key != '0':
-    #         sender_balance = self.get_balance(sender_public_key)
-    #         if sender_balance < amount+self.transaction_fee:
-    #             raise ValueError('Insufficient balance')
-
-    #     self.used_transaction_ids.add(transaction_id)
-    #     self.current_transactions.append({
-    #         'transaction_id': transaction_id,
-    #         'sender_public_key': sender_public_key,
-    #         'recipient_public_key': recipient_public_key,
-    #         'amount': amount,
-    #         'signature': signature
-    #     })
-    #     return self.last_block['index'] + 1
+        self.used_transaction_ids.add(transaction_id)
+        self.current_transactions.append({
+            'transaction_id': transaction_id,
+            'sender_public_key': sender_public_key,
+            'recipient_public_key': recipient_public_key,
+            'amount': amount,
+            'signature': signature
+        })
+        return self.last_block['index'] + 1
     
     def get_balance(self, public_key):
         balance = 0
