@@ -7,6 +7,7 @@ import requests
 from urllib.parse import urlparse
 import threading
 from ecdsa import VerifyingKey, SECP256k1, BadSignatureError, util
+import random
 
 
 def get_public_ip():
@@ -133,16 +134,17 @@ class Blockchain:
         
         # Create a unique transaction ID for the reward
         reward_transaction_id = str(uuid.uuid4())
+        reward = 1+0.01*len(temp_transactions)
         # Create a reward transaction to the miner
         temp_transactions.append({
             'transaction_id': reward_transaction_id,
             'sender_public_key': '0',  # '0' signifies a new coin
             'recipient_public_key': miner_public_key,
-            'amount': 1,
+            'amount': reward,
             'signature': ''  # No signature needed for mining reward
         })
 
-        proof = 0
+        proof = random.randint(0, 10**12)
         block = {
             'index': len(self.chain) + 1,
             'timestamp': time.time(),

@@ -254,6 +254,8 @@ document.addEventListener('DOMContentLoaded', function() {
             messagesDiv.textContent = 'Please generate your key pair first.';
             return;
         }
+        
+        messagesDiv.textContent = 'Mining in progress...';
     
         fetch('/mine', {
             method: 'POST',
