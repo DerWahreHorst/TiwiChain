@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display the node list
     function fetchNodes() {
-        fetch('/nodes')
+        fetch('localhost:8316/nodes')
             .then(response => response.json())
             .then(data => {
                 nodesDiv.innerHTML = '';
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display the blockchain
     function fetchChain() {
-        fetch('/chain')
+        fetch('localhost:8316/chain')
             .then(response => response.json())
             .then(data => {
                 chainDiv.innerHTML = '';

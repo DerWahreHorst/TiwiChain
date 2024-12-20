@@ -15,7 +15,7 @@ IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
             tracking down the missing module yourself. Thanks!
 
 missing module named pyimod02_importers - imported by /Users/jtiwi/Movies/TiwiCoin Blockchain/venv/lib/python3.9/site-packages/PyInstaller/hooks/rthooks/pyi_rth_pkgutil.py (delayed)
-missing module named nt - imported by shutil (conditional), importlib._bootstrap_external (conditional), ntpath (optional), pathlib (conditional), os (delayed, conditional, optional), ctypes (delayed, conditional)
+missing module named nt - imported by shutil (conditional), importlib._bootstrap_external (conditional), pathlib (conditional), os (delayed, conditional, optional), ntpath (optional), ctypes (delayed, conditional)
 missing module named pep517 - imported by importlib.metadata (delayed)
 missing module named 'org.python' - imported by copy (optional), xml.sax (delayed, conditional)
 missing module named winreg - imported by importlib._bootstrap_external (conditional), mimetypes (optional), urllib.request (delayed, conditional, optional), platform (delayed, optional), werkzeug.debug (delayed, conditional), requests.utils (delayed, conditional, optional)
@@ -35,10 +35,10 @@ missing module named multiprocessing.Value - imported by multiprocessing (top-le
 missing module named vms_lib - imported by platform (delayed, optional)
 missing module named java - imported by platform (delayed)
 missing module named _winreg - imported by platform (delayed, optional)
+missing module named StringIO - imported by six (conditional)
 missing module named gmpy - imported by ecdsa.ellipticcurve (optional), ecdsa.numbertheory (optional)
 missing module named gmpy2 - imported by ecdsa.ellipticcurve (optional), ecdsa.numbertheory (optional)
 runtime module named six.moves - imported by ecdsa.numbertheory (top-level)
-missing module named StringIO - imported by six (conditional)
 missing module named simplejson - imported by requests.compat (conditional, optional)
 missing module named dummy_threading - imported by requests.cookies (optional)
 missing module named typing_extensions - imported by markupsafe (conditional), werkzeug.test (conditional), werkzeug.datastructures.mixins (conditional), werkzeug.datastructures.structures (conditional), werkzeug.datastructures.auth (conditional), werkzeug.datastructures.headers (conditional), werkzeug.datastructures.range (conditional), click.globals (conditional), click.utils (conditional), click.types (conditional), click.parser (conditional), click.core (conditional), click.decorators (conditional), jinja2.bccache (conditional), jinja2.utils (conditional), jinja2.runtime (conditional), jinja2.lexer (conditional), jinja2.nodes (conditional), jinja2.visitor (conditional), jinja2.compiler (conditional), jinja2.filters (conditional), jinja2.defaults (conditional), jinja2.parser (conditional), jinja2.environment (conditional), jinja2.ext (conditional), flask.config (conditional), itsdangerous.serializer (conditional), flask.sessions (conditional), urllib3.util.retry (conditional), urllib3._collections (conditional), urllib3.util.ssltransport (conditional), urllib3.connectionpool (conditional), urllib3.poolmanager (conditional), urllib3.contrib.emscripten.fetch (conditional), charset_normalizer.legacy (conditional)
