@@ -33,7 +33,8 @@ class Blockchain:
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
         self.used_transaction_ids = set()  # To track used transaction IDs
-        self.transaction_fee = 0.1
+        self.fixed_mining_reward = 1
+        self.transaction_fee = 0.01
 
         for n in self.nodes:
             self.node_health[n] = {"failures": 0, "quarantined": False}
@@ -134,7 +135,7 @@ class Blockchain:
         
         # Create a unique transaction ID for the reward
         reward_transaction_id = str(uuid.uuid4())
-        reward = 1+0.01*len(temp_transactions)
+        reward = self.fixed_mining_reward+self.transaction_fee*len(temp_transactions)
         # Create a reward transaction to the miner
         temp_transactions.append({
             'transaction_id': reward_transaction_id,
@@ -397,10 +398,10 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        #node_address = "http://"+get_public_ip()+":8317"
+        node_address = "http://"+get_public_ip()+":8317"
         #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
-        node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
-
+        #node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
+        
         if len(node_address)>7:
             for node in self.nodes:
                 # Register with the seed node
