@@ -433,6 +433,7 @@ class Blockchain:
             #register own address
             self.register_node(node_address)
 
+
     def synchronize_transactions(self):
         """
         Synchronize current_transactions with all nodes in the network.
