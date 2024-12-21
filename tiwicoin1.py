@@ -608,8 +608,8 @@ def start_background_tasks():
 def index():
     #print("request.remote_addr = ",request.remote_addr)
     # Check the requester IP address
-    #if request.remote_addr != '127.0.0.1':
-    #    abort(403)  # Forbidden if not localhost
+    if request.remote_addr != '127.0.0.1':
+        abort(403)  # Forbidden if not localhost
     return render_template('index.html')
 
 @app.route('/node_id', methods=['GET'])
