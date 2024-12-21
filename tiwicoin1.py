@@ -135,7 +135,7 @@ class Blockchain:
         
         # Create a unique transaction ID for the reward
         reward_transaction_id = str(uuid.uuid4())
-        reward = self.fixed_mining_reward+self.transaction_fee*len(temp_transactions)
+        reward = self.mining_reward(len(temp_transactions))
         # Create a reward transaction to the miner
         temp_transactions.append({
             'transaction_id': reward_transaction_id,
@@ -153,13 +153,16 @@ class Blockchain:
             'proof': proof,
             'previous_hash': self.hash(self.chain[-1]),
         }
-        guess_hash = self.hash(block)
-        while guess_hash[:4] != "0000":
+        while not self.valid_proof(block):
             proof += 1
             block['proof'] = proof
-            guess_hash = self.hash(block)
 
         return block
+    
+
+    def mining_reward(self, number_of_transactions): 
+        return self.fixed_mining_reward/(2**(len(self.chain)//500000)) + self.transaction_fee*number_of_transactions
+    
 
     def valid_proof(self, block):
         """
@@ -171,7 +174,7 @@ class Blockchain:
         :return: <bool> True if correct, False if not.
         """
         guess_hash =  self.hash(block)
-        return guess_hash[:4] == "0000"
+        return guess_hash[:5] == "00000"
 
     def valid_chain(self, chain):
         """
@@ -207,7 +210,7 @@ class Blockchain:
                 return False
 
             coinbase_tx = coinbase_transactions[0]
-            expected_reward = self.fixed_mining_reward + self.transaction_fee*(len(block['transactions'])-1)
+            expected_reward = self.mining_reward(len(block['transactions'])-1)
             if coinbase_tx['amount'] != expected_reward:
                 print("Invalid coinbase transaction amount.")
                 return False
@@ -243,11 +246,6 @@ class Blockchain:
             current_index += 1
         print("chain valid!!!")
         return True
-    
-    
-    def get_expected_reward(self):
-        # Define your block reward here
-        return 1  # Example: 50 coins per block
 
 
     def resolve_conflicts(self):
@@ -399,8 +397,7 @@ class Blockchain:
 
     def register_with_network(self):
         node_address = "http://"+get_public_ip()+":8317"
-        #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
-        #node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
+        #node_address = 'https://77ce-2003-c1-8702-b100-a156-f967-b675-156.ngrok-free.app'
         
         if len(node_address)>7:
             for node in self.nodes:
