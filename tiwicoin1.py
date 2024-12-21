@@ -174,7 +174,7 @@ class Blockchain:
         :return: <bool> True if correct, False if not.
         """
         guess_hash =  self.hash(block)
-        return guess_hash[:6] == "000000"
+        return guess_hash[:5] == "00000"
 
     def valid_chain(self, chain):
         """
@@ -542,7 +542,6 @@ def node_registration_worker():
     """
     Registers the node with the network once at startup.
     """
-    print("node_registration_worker !!!")
     with blockchain_lock:
         try:
             print("Registering with network...")
@@ -556,7 +555,6 @@ def node_sync_worker():
     Periodically synchronizes the node list.
     """
     while True:
-        print("node_sync_worker !!!")
         time.sleep(30)  # Adjust the interval as needed
         with blockchain_lock:
             try:
