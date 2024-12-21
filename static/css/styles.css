@@ -140,6 +140,9 @@ header h1 {
     padding: 10px 15px; /* Consistent padding */
     text-align: left; /* Aligns text to the left */
     /* No border applied to cells */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis */
+    max-width: 70vw;
   }
   
   /* Alternative Method: Adding Border to Cells (More Reliable Across Browsers) */

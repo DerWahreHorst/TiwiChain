@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display the node list
     function fetchNodes() {
-        fetch('localhost:8316/nodes')
+        fetch('/nodes')
             .then(response => response.json())
             .then(data => {
                 nodesDiv.innerHTML = '';
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to fetch and display the blockchain
     function fetchChain() {
-        fetch('localhost:8316/chain')
+        fetch('/chain')
             .then(response => response.json())
             .then(data => {
                 chainDiv.innerHTML = '';
@@ -173,9 +173,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up automatic refresh for the blockchain section
     const refreshInterval = 5000; // Refresh every 30 seconds (adjust as needed)
-    setInterval(fetchChain, refreshInterval);
-    setInterval(fetchNodes, refreshInterval);
-    setInterval(fetchBalances, refreshInterval);
+    //setInterval(fetchChain, refreshInterval);
+    //setInterval(fetchNodes, refreshInterval);
+    //setInterval(fetchBalances, refreshInterval);
 
 
     function generateUUID() {

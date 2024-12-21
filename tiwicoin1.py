@@ -207,7 +207,7 @@ class Blockchain:
                 return False
 
             coinbase_tx = coinbase_transactions[0]
-            expected_reward = self.get_expected_reward()
+            expected_reward = self.fixed_mining_reward + self.transaction_fee*len(block['transactions'])
             if coinbase_tx['amount'] != expected_reward:
                 print("Invalid coinbase transaction amount.")
                 return False
@@ -518,8 +518,7 @@ class Blockchain:
 
 
 
-app_public = Flask(__name__)
-app_private = Flask(__name__)
+app= Flask(__name__)
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
@@ -582,25 +581,9 @@ def transactions_sync_worker():
                 print(f"Error during transaction synchronization: {e}")
         time.sleep(30)  # Adjust the interval as needed (e.g., every 30 seconds)
 
-def private_app_worker():
-    app_private.run(host='127.0.0.1', port=8316)
-
-def public_app_worker():
-    app_public.run(host='0.0.0.0', port=8317)
-
 
 def start_background_tasks():
-    # Start node registration thread
-    private_app_thread = threading.Thread(target=private_app_worker)
-    private_app_thread.daemon = False
-    private_app_thread.start()
-
-    # Start node registration thread
-    public_app_thread = threading.Thread(target=public_app_worker)
-    public_app_thread.daemon = False
-    public_app_thread.start()
-
-    # Start node registration thread
+     # Start node registration thread
     node_registration_thread = threading.Thread(target=node_registration_worker)
     node_registration_thread.daemon = True
     node_registration_thread.start()
@@ -621,19 +604,19 @@ def start_background_tasks():
     transactions_sync_thread.start()
 
 
-@app_private.route('/')
+@app.route('/')
 def index():
-    print("request.remote_addr = ",request.remote_addr)
+    #print("request.remote_addr = ",request.remote_addr)
     # Check the requester IP address
     #if request.remote_addr != '127.0.0.1':
     #    abort(403)  # Forbidden if not localhost
     return render_template('index.html')
 
-@app_public.route('/node_id', methods=['GET'])
+@app.route('/node_id', methods=['GET'])
 def get_node_id():
     return jsonify({'node_id': blockchain.node_id}), 200
 
-@app_private.route('/mine', methods=['POST'])
+@app.route('/mine', methods=['POST'])
 def mine():
     values = request.get_json()
 
@@ -658,7 +641,7 @@ def mine():
     return jsonify(response), 200
 
 
-@app_private.route('/transactions/new', methods=['POST'])
+@app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
 
@@ -715,7 +698,7 @@ def new_transaction():
     return jsonify(response), 201
 
 
-@app_public.route('/chain', methods=['GET'])
+@app.route('/chain', methods=['GET'])
 def full_chain():
     response = {
         'chain': blockchain.chain,
@@ -723,14 +706,14 @@ def full_chain():
     }
     return jsonify(response), 200
 
-@app_public.route('/nodes', methods=['GET'])
+@app.route('/nodes', methods=['GET'])
 def get_nodes():
     response = {
         'nodes': list(blockchain.nodes),
     }
     return jsonify(response), 200    
 
-@app_public.route('/nodes/register', methods=['POST'])
+@app.route('/nodes/register', methods=['POST'])
 def register_nodes():
     values = request.get_json()
 
@@ -753,7 +736,7 @@ def register_nodes():
     }
     return jsonify(response), 201
 
-@app_private.route('/nodes/synchronize', methods=['GET'])
+@app.route('/nodes/synchronize', methods=['GET'])
 def synchronize():
     blockchain.synchronize_nodes()
     response = {
@@ -762,7 +745,7 @@ def synchronize():
     }
     return jsonify(response), 200
 
-@app_private.route('/nodes/register_with_network', methods=['GET'])
+@app.route('/nodes/register_with_network', methods=['GET'])
 def register_with_network():
 
     blockchain.register_with_network()
@@ -773,7 +756,7 @@ def register_with_network():
     return jsonify(response), 200
 
 
-@app_private.route('/nodes/resolve', methods=['GET'])
+@app.route('/nodes/resolve', methods=['GET'])
 def consensus():
     replaced = blockchain.resolve_conflicts()
 
@@ -790,7 +773,7 @@ def consensus():
 
     return jsonify(response), 200
 
-@app_private.route('/balances', methods=['GET'])
+@app.route('/balances', methods=['GET'])
 def get_balances():
     addresses = blockchain.get_all_addresses()
     result = []
@@ -802,7 +785,7 @@ def get_balances():
         })
     return jsonify(result), 200
 
-@app_public.route('/transactions/pending', methods=['GET'])
+@app.route('/transactions/pending', methods=['GET'])
 def get_pending_transactions():
     response = {
         'pending_transactions': blockchain.current_transactions
@@ -814,8 +797,8 @@ def get_pending_transactions():
 
 
 
-
-
 if __name__ == '__main__':
     # Start the consensus daemon
     start_background_tasks()
+    # Run the Flask app
+    app.run(host='0.0.0.0', port=8317)
