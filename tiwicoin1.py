@@ -174,7 +174,7 @@ class Blockchain:
         :return: <bool> True if correct, False if not.
         """
         guess_hash =  self.hash(block)
-        return guess_hash[:5] == "00000"
+        return guess_hash[:6] == "000000"
 
     def valid_chain(self, chain):
         """
@@ -294,6 +294,7 @@ class Blockchain:
         # Replace our chain if we discovered a new, valid chain longer than ours
         if new_chain:
             self.chain = new_chain
+            self.current_transactions = []
             return True
 
         return False
