@@ -207,7 +207,7 @@ class Blockchain:
                 return False
 
             coinbase_tx = coinbase_transactions[0]
-            expected_reward = self.fixed_mining_reward + self.transaction_fee*len(block['transactions'])
+            expected_reward = self.fixed_mining_reward + self.transaction_fee*(len(block['transactions'])-1)
             if coinbase_tx['amount'] != expected_reward:
                 print("Invalid coinbase transaction amount.")
                 return False
@@ -398,9 +398,9 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        #node_address = "http://"+get_public_ip()+":8317"
+        node_address = "http://"+get_public_ip()+":8317"
         #node_address = 'https://bcbf-80-187-114-41.ngrok-free.app'
-        node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
+        #node_address = 'https://7e49-2a01-599-626-3ba0-5805-5b74-420d-ba19.ngrok-free.app'
         
         if len(node_address)>7:
             for node in self.nodes:
