@@ -618,6 +618,8 @@ def get_node_id():
 
 @app.route('/mine', methods=['POST'])
 def mine():
+    if request.remote_addr != '127.0.0.1':
+        abort(403)  # Forbidden if not localhost
     values = request.get_json()
 
     required = ['miner_public_key']
@@ -643,6 +645,8 @@ def mine():
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
+    if request.remote_addr != '127.0.0.1':
+        abort(403)  # Forbidden if not localhost
     values = request.get_json()
 
     required = ['transaction_id', 'sender_public_key', 'recipient_public_key', 'amount', 'signature']
@@ -758,6 +762,8 @@ def register_with_network():
 
 @app.route('/nodes/resolve', methods=['GET'])
 def consensus():
+    if request.remote_addr != '127.0.0.1':
+        abort(403)  # Forbidden if not localhost
     replaced = blockchain.resolve_conflicts()
 
     if replaced:
