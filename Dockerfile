@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 8317
 
 # Run the command to start the app
-CMD ["python", "tiwicoin1.py"]
+CMD ["python", "tiwichain.py"]
