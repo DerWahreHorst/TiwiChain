@@ -398,42 +398,41 @@ class Blockchain:
         return False
 
     def register_with_network(self):
-        #node_address = "http://"+get_public_ip()+":8317"
-        node_address = 'https://77ce-2003-c1-8702-b100-a156-f967-b675-156.ngrok-free.app'
-        
-        if len(node_address)>7:
-            for node in self.nodes:
-                # Register with the seed node
-                payload = {
-                    'nodes': [node_address]
-                }
-                try:
-                    response = requests.post(f'http://{node}/nodes/register', json=payload)
-                    if response.status_code == 201:
-                        print("Successfully registered with the seed node.")
-                        # Retrieve the list of nodes from the seed node
-                        nodes_response = requests.get(f'http://{node}/nodes')
-                        if nodes_response.status_code == 200:
-                            nodes_data = nodes_response.json()
-                            other_nodes = nodes_data.get('nodes', [])
-                            # Register with other nodes
-                            for node in other_nodes:
-                                if node != node_address:
-                                    try:
-                                        url = f'http://{node}/nodes/register'
-                                        requests.post(url, json=payload, timeout=15)
-                                        print(f"Registered with node {node}")
-                                    except requests.exceptions.RequestException:
-                                        print(f"Could not register with node {node}")
-                        else:
-                            print("Could not retrieve node list from seed node.")
-                    else:
-                        print(f"Failed to register with the seed node: {response.text}")
-                except Exception as e:
-                    print(f"Error registering with seed node: {e}")
+        global NODE_ADDRESS
 
-            #register own address
-            self.register_node(node_address)
+        for node in self.nodes:
+            print("trying to register with node ", node)
+            # Register with the seed node
+            payload = {
+                'nodes': [NODE_ADDRESS]
+            }
+            try:
+                response = requests.post(f'http://{node}/nodes/register', json=payload)
+                if response.status_code == 201:
+                    print("Successfully registered with the seed node.")
+                    # Retrieve the list of nodes from the seed node
+                    nodes_response = requests.get(f'http://{node}/nodes')
+                    if nodes_response.status_code == 200:
+                        nodes_data = nodes_response.json()
+                        other_nodes = nodes_data.get('nodes', [])
+                        # Register with other nodes
+                        for node in other_nodes:
+                            if node != NODE_ADDRESS:
+                                try:
+                                    url = f'http://{node}/nodes/register'
+                                    requests.post(url, json=payload, timeout=15)
+                                    print(f"Registered with node {node}")
+                                except requests.exceptions.RequestException:
+                                    print(f"Could not register with node {node}")
+                    else:
+                        print("Could not retrieve node list from seed node.")
+                else:
+                    print(f"Failed to register with the seed node: {response.text}")
+            except Exception as e:
+                print(f"Error registering with seed node: {e}")
+
+        #register own address
+        self.register_node(NODE_ADDRESS)
 
 
     def synchronize_transactions(self):
@@ -522,6 +521,7 @@ app= Flask(__name__)
 
 # Create a global variable that will hold the allowed IPs
 ALLOWED_IPS = set()
+NODE_ADDRESS = ""
 
 # Instantiate the Blockchain
 blockchain = Blockchain()
@@ -620,7 +620,7 @@ def get_node_id():
 
 @app.route('/mine', methods=['POST'])
 def mine():
-    if request.remote_addr != '127.0.0.1':
+    if request.remote_addr not in ALLOWED_IPS:
         abort(403)  # Forbidden if not localhost
     values = request.get_json()
 
@@ -647,7 +647,7 @@ def mine():
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
-    if request.remote_addr != '127.0.0.1':
+    if request.remote_addr not in ALLOWED_IPS:
         abort(403)  # Forbidden if not localhost
     values = request.get_json()
 
@@ -764,7 +764,7 @@ def register_with_network():
 
 @app.route('/nodes/resolve', methods=['GET'])
 def consensus():
-    if request.remote_addr != '127.0.0.1':
+    if request.remote_addr not in ALLOWED_IPS:
         abort(403)  # Forbidden if not localhost
     replaced = blockchain.resolve_conflicts()
 
@@ -817,6 +817,12 @@ def parse_arguments():
         help="Specify an IP that is allowed access (multiple allowed).",
         default=[]
     )
+    parser.add_argument(
+        "--my-ip",
+        dest="my_ip",
+        help="Specify your node's IP.",
+        default=None
+    )
     
     return parser.parse_args()
 
@@ -829,6 +835,11 @@ if __name__ == '__main__':
     
     # Optionally ensure localhost is always allowed
     ALLOWED_IPS.add("127.0.0.1")
+
+    if args.my_ip:
+        NODE_ADDRESS = args.my_ip
+    else:
+        NODE_ADDRESS = "http://"+get_public_ip()+":8317"
     
     # Start the consensus daemon
     start_background_tasks()

@@ -14,7 +14,9 @@
                 "--allowed-ip",
                 "127.0.0.1",
                 "--allowed-ip",
-                "91.50.171.221"
+                "91.50.172.221",
+                "--my-ip",
+                "https://ddb8-2003-c1-873b-b800-a5dd-b1a5-1a2f-de5b.ngrok-free.app"
             ]
         }
     ]
