@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import threading
 from ecdsa import VerifyingKey, SECP256k1, BadSignatureError, util
 import random
+import argparse
 
 
 def get_public_ip():
@@ -519,6 +520,9 @@ class Blockchain:
 
 app= Flask(__name__)
 
+# Create a global variable that will hold the allowed IPs
+ALLOWED_IPS = set()
+
 # Instantiate the Blockchain
 blockchain = Blockchain()
 
@@ -601,11 +605,12 @@ def start_background_tasks():
     transactions_sync_thread.start()
 
 
+
 @app.route('/')
 def index():
     #print("request.remote_addr = ",request.remote_addr)
     # Check the requester IP address
-    if request.remote_addr != '127.0.0.1':
+    if request.remote_addr not in ALLOWED_IPS:
         abort(403)  # Forbidden if not localhost
     return render_template('index.html')
 
@@ -798,10 +803,35 @@ def get_pending_transactions():
 
 
 
-
+def parse_arguments():
+    """
+    Parse the command-line arguments to get a list of allowed IP addresses.
+    Example usage:
+      python app.py --allowed-ip 127.0.0.1 --allowed-ip 192.168.1.10
+    """
+    parser = argparse.ArgumentParser(description="Run a Flask app with restricted access by IP.")
+    parser.add_argument(
+        "--allowed-ip",
+        dest="allowed_ips",
+        action="append",
+        help="Specify an IP that is allowed access (multiple allowed).",
+        default=[]
+    )
+    
+    return parser.parse_args()
 
 if __name__ == '__main__':
+        # Parse command-line arguments
+    args = parse_arguments()
+    
+    # Populate the global ALLOWED_IPS set (strings)
+    ALLOWED_IPS = set(args.allowed_ips)
+    
+    # Optionally ensure localhost is always allowed
+    ALLOWED_IPS.add("127.0.0.1")
+    
     # Start the consensus daemon
     start_background_tasks()
+
     # Run the Flask app
     app.run(host='0.0.0.0', port=8317)
