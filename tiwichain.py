@@ -30,7 +30,7 @@ class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317'])
+        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', 'tiwicoin.halloarsch.de:443'])
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
         self.used_transaction_ids = set()  # To track used transaction IDs
