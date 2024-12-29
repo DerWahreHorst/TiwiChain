@@ -9,6 +9,7 @@ import threading
 from ecdsa import VerifyingKey, SECP256k1, BadSignatureError, util
 import random
 import argparse
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 def get_public_ip():
@@ -823,6 +824,12 @@ def parse_arguments():
         help="Specify your node's IP.",
         default=None
     )
+    parser.add_argument(
+        "--reverse-proxy",
+        dest="reverse_proxy",
+        action="store_true",
+        help="If the node is running behind a reverse proxy."
+    )
     
     return parser.parse_args()
 
@@ -843,6 +850,11 @@ if __name__ == '__main__':
     
     # Start the consensus daemon
     start_background_tasks()
+
+    if args.reverse_proxy:
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+        )
 
     # Run the Flask app
     app.run(host='0.0.0.0', port=8317)
