@@ -30,7 +30,7 @@ class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', 'https://tiwicoin.halloarsch.de:443'])
+        self.nodes = set(['http://s3y0yvftgi2cph5e.myfritz.net:8317', 'https://tiwicoin.halloarsch.de:443'])
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
         self.used_transaction_ids = set()  # To track used transaction IDs
@@ -415,7 +415,7 @@ class Blockchain:
                 if response.status_code == 201:
                     print("Successfully registered with the seed node.")
                     # Retrieve the list of nodes from the seed node
-                    nodes_response = requests.get(f'http://{node}/nodes')
+                    nodes_response = requests.get(f'{node}/nodes')
                     if nodes_response.status_code == 200:
                         nodes_data = nodes_response.json()
                         other_nodes = nodes_data.get('nodes', [])
