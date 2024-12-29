@@ -30,7 +30,7 @@ class Blockchain:
     def __init__(self):
         self.current_transactions = []
         self.chain = []
-        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', 'tiwicoin.halloarsch.de:443'])
+        self.nodes = set(['s3y0yvftgi2cph5e.myfritz.net:8317', 'https://tiwicoin.halloarsch.de:443'])
         self.node_health = {}
         self.node_id = str(uuid.uuid4())
         self.used_transaction_ids = set()  # To track used transaction IDs
@@ -269,8 +269,8 @@ class Blockchain:
                 continue
 
             try:
-                response = requests.get(f'http://{node}/chain', timeout=15)
-                print(f"Requesting node http://{node}/chain ...")
+                response = requests.get(f'{node}/chain', timeout=15)
+                print(f"Requesting node {node}/chain ...")
                 print(response)
 
                 if response.status_code == 200:
@@ -324,19 +324,23 @@ class Blockchain:
         """
         Add a new node to the list of nodes.
 
-        :param address: Address of the node. Eg. 'http://192.168.0.5:5000'
+        :param address: Address of the node, e.g. 'http://192.168.0.5:5000'
         :return: True if the node was added, False if it was already present
         """
-        # Before adding the node, check if it's the local node
-        #if self.is_local_node(address):
-        #    print("Skipping: The given address leads to the current node itself.")
-        #    return False
+        # Parse the URL
         parsed_url = urlparse(address)
+        # If the user didn't provide a scheme, default to 'http'
+        scheme = parsed_url.scheme or 'http'
+        # If the netloc is empty, use the path (usually happens if someone passes in just the IP:port)
         netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path
-        if netloc not in self.nodes:
-            self.nodes.add(netloc)
-            self.node_health[netloc] = {"failures": 0, "quarantined": False}
+        # Build the full URL including the scheme
+        full_url = f"{scheme}://{netloc}"
+        # Check if the node is already known
+        if full_url not in self.nodes:
+            self.nodes.add(full_url)
+            self.node_health[full_url] = {"failures": 0, "quarantined": False}
             return True
+
         return False
             
     def synchronize_nodes(self):
@@ -351,7 +355,7 @@ class Blockchain:
                 print("quarantined")
                 continue
             try:
-                response = requests.get(f'http://{node}/nodes', timeout=15)
+                response = requests.get(f'{node}/nodes', timeout=15)
                 if response.status_code == 200:
                     data = response.json()
                     neighbor_nodes = data.get('nodes', [])
@@ -387,7 +391,7 @@ class Blockchain:
         Returns True if reachable and should be restored, False otherwise.
         """
         try:
-            response = requests.get(f'http://{node}/chain', timeout=15)
+            response = requests.get(f'{node}/chain', timeout=15)
             if response.status_code == 200:
                 print(f"Quarantined node {node} is now reachable. Removing quarantine.")
                 return True
@@ -407,7 +411,7 @@ class Blockchain:
                 'nodes': [NODE_ADDRESS]
             }
             try:
-                response = requests.post(f'http://{node}/nodes/register', json=payload)
+                response = requests.post(f'{node}/nodes/register', json=payload)
                 if response.status_code == 201:
                     print("Successfully registered with the seed node.")
                     # Retrieve the list of nodes from the seed node
@@ -419,7 +423,7 @@ class Blockchain:
                         for node in other_nodes:
                             if node != NODE_ADDRESS:
                                 try:
-                                    url = f'http://{node}/nodes/register'
+                                    url = f'{node}/nodes/register'
                                     requests.post(url, json=payload, timeout=15)
                                     print(f"Registered with node {node}")
                                 except requests.exceptions.RequestException:
@@ -442,7 +446,7 @@ class Blockchain:
         ensuring no duplicates based on transaction_id.
         """
         for node in self.nodes:
-            node_url = f'http://{node}/transactions/pending'
+            node_url = f'{node}/transactions/pending'
             try:
                 response = requests.get(node_url, timeout=10)
                 if response.status_code == 200:
